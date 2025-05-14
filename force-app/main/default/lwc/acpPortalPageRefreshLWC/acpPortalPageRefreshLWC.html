@@ -1,0 +1,21 @@
+<template>
+    <div if:true={showNotification}>
+<!-- 
+        <lightning-flow
+            flow-api-name='Clone_Grant_Request'
+            flow-output-variables={outputVariables}
+        >
+        </lightning-flow> -->
+        <lightning-card >
+            <p style="margin-top: -30px;text-align:center; font-weight:bold; margin-bottom:20px">Your {NewOrClone} Grant Request has been successfully submitted!</p>
+        <!-- </br>
+            <p class="slds-p-horizontal_small slds-align_absolute-center">Click "Navigate Home" to return to the Home screen</p>
+            <p class="slds-p-horizontal_small slds-align_absolute-center">or</p>
+            <p class="slds-p-horizontal_small slds-align_absolute-center">Click "Next/Finish" to stay on this screen</p> -->
+        </br>
+            <div class="slds-p-horizontal_medium" style="text-align:center">
+                <lightning-button label="Navigate Home" onclick={navigateHome}></lightning-button>
+            </div>
+        </lightning-card>
+    </div>
+</template>

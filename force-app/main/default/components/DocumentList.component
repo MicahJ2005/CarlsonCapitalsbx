@@ -1,0 +1,18 @@
+<apex:component >
+    <apex:attribute name="docs" description="This is the list of documents to display" type="ContentDocument[]" required="true" />    
+    <apex:attribute name="viewall" description="This indicates where to show the view all link" type="boolean" default="true"/>    
+    <apex:attribute name="groupid" description="This indicates the id of the document group displayed" type="string" required="true"/>    
+    <apex:attribute name="groupname" description="This indicates the name of the document group displayed" type="string" required="true"/>        
+    <apex:pageBlockSection columns="1">
+        <apex:pageBlockTable value="{!docs}" var="item">
+            <apex:column HeaderValue="Title">
+                <apex:outputLink value="/{!item.id}">{!item.Title}</apex:outputLink>                
+            </apex:column>
+            <apex:column value="{!item.LastModifiedDate}"/>
+            <!--<apex:column value="{!item.LastModifiedById}"/>-->
+        </apex:pageBlockTable>
+        <apex:pageBlockSectionItem rendered="{!viewall}">
+            <apex:outputLink value="/ccm/apex/AllCommunityDocuments?groupid={!groupid}&groupname={!groupname}">View All {!groupname}</apex:outputLink>                   
+        </apex:pageBlockSectionItem> 
+    </apex:pageBlockSection>
+</apex:component>

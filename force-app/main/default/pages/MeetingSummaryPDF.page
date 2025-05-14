@@ -1,0 +1,104 @@
+<!-- Works, but when you save - it tries to default save as an .html document -->
+<!-- <apex:page title="Financial Planning" showHeader="false" sidebar="false" standardController="Account" extensions="MeetingNotesPDFController" 
+            applyBodyTag="false" applyHtmlTag="false" standardStylesheets="false" 
+            contenttype="application/msWord#FinancialPlanning.doc" 
+            cache="true" id="thePage">
+<!-- docx does not work - "Word found unreadable content" 
+<apex:page title="Financial Planning" showHeader="false" sidebar="false" standardController="Account" extensions="MeetingNotesPDFController" 
+            applyBodyTag="false" applyHtmlTag="false" standardStylesheets="false" 
+            contenttype="application/vnd.openxmlformats-officedocument.wordprocessingml.document#FinancialPlanning.docx" 
+            cache="true" id="thePage">-->
+<apex:page title="Financial Planning" showHeader="false" sidebar="false" standardController="Account" extensions="MeetingNotesPDFController" 
+            applyBodyTag="false" applyHtmlTag="false" standardStylesheets="false" 
+            contentType="application/pdf#MeetingNotes.pdf" 
+            renderAs="pdf">
+    <!--<html>-->
+        <head>
+            <!-- For PDFs and word docs, the styles need to be inline - so these are VF variables to store all the styles that are used in the elements below -->
+            <apex:variable value="text-align:center; font-family: 'Arial', sans-serif; color: #33460D;" var="docHeader"></apex:variable>
+            <apex:variable value="font-family: 'Gill Sans MT', 'Arial', sans-serif; color: #916D00; font-size: 18px; text-transform: uppercase; padding-bottom: 1px;" var="sectionHeader"></apex:variable>
+            <apex:variable value="font-family: 'Gill Sans MT', 'Arial', sans-serif; color: #916D00; font-size: 18px; font-style: italic; padding-bottom: 10px; text-align: center;" var="sectionFooter"></apex:variable>
+            <apex:variable value="font-family: 'Bembo', 'Times New Roman', serif; font-weight: bold; font-size: 14px;" var="meetingDates"></apex:variable>
+            <apex:variable value="font-family: 'Bembo', 'Times New Roman', serif; font-weight: bold; font-size: 14px;" var="summary"></apex:variable>
+            <apex:variable value="font-family: 'Bembo', 'Times New Roman', serif; font-weight: bold; font-size: 14px;" var="questionHeader"></apex:variable>
+            <apex:variable value="font-family: 'Bembo', 'Times New Roman', serif; text-align:top; font-size: 14px;" var="questionLine"></apex:variable>
+    
+        </head>
+        <body>
+            <apex:form >
+                <!-- for Word docs, the image must be in DOCUMENTS 
+                 <p style="text-align: center;"><apex:image value="{!URLFOR($Resource.Investment_Snapshot_Logo)}" width="217" height="60" style="margin:0 auto;"/></p>-->
+                 <p style="text-align: center;"><img src="https://ccmfsc--fscsandbox.sandbox.my.salesforce.com/servlet/servlet.ImageServer?id=015VG000001vBuD&oid=00DVG000000PLR3&lastMod=1738247877000" width="150" height="106" style="margin:0 auto;" /></p>
+                <h2 style="{!docHeader}">
+                    {!householdName}<br/>
+                    Financial Planning Summary<br/>
+                    <apex:outputText value="{0, date, MMMM d','  yyyy}">
+                        <apex:param value="{!NOW()}" /> 
+                    </apex:outputText>
+                </h2>
+                
+                <div>
+                    <apex:repeat value="{!notes}" var="note">
+                        <apex:outputPanel layout="block" style="page-break-inside: avoid;">
+                            <div style="{!sectionHeader}">
+                                {!note.Meeting_Theme__c}
+                            </div>
+                            <apex:outputPanel rendered="{!note.Meeting_Theme__c != 'Background'}">
+                                <div style="{!meetingDates}">
+                                    <apex:outputText value="{0, date, MM/dd/yyyy}">
+                                        <apex:param value="{!note.CreatedDate}" /> 
+                                    </apex:outputText>
+                                    <br/>
+                                    Meeting Frequency: {!frequencyMeetingMap[note.Meeting_Theme__c]}
+                                    <br/>
+                                    Last Meeting: 
+                                    <apex:outputText value="{0, date, MM/dd/yyyy}">
+                                        <apex:param value="{!lastMeetingMap[note.Meeting_Theme__c]}" /> 
+                                    </apex:outputText>
+                                    <br/>
+                                    Next Meeting: 
+                                    <apex:outputText value="{0, date, MM/dd/yyyy}">
+                                        <apex:param value="{!nextMeetingMap[note.Meeting_Theme__c]}" /> 
+                                    </apex:outputText>
+                                </div>
+                            </apex:outputPanel>
+                            <div style="{!summary}">
+                                <apex:outputText value="{!note.Summary__c}" escape="false" />
+                            </div>
+                            <br/>
+                            <apex:outputPanel layout="block" style="page-break-inside: avoid;">
+                                <table border="1" cellpadding="5" cellspacing="0">
+                                    <tr>
+                                        <td style="{!questionHeader}" width="40%">Question</td>
+                                        <td style="{!questionHeader}" width="100">Status</td>
+                                        <td style="{!questionHeader}" width="40%">Notes</td>
+                                    </tr>
+                                    <apex:repeat value="{!note.Client_Meeting_Tasks__r}" var="task">
+                                        <tr>
+                                            <td style="{!questionLine}">{!task.Question__c}</td>
+                                            <td style="{!questionLine}">{!task.Status__c}</td>
+                                            <td style="{!questionLine}">{!task.Notes__c}</td>
+                                        </tr>
+                                    </apex:repeat>
+                                </table>
+                            </apex:outputPanel>
+                            <br/><br/>
+                        </apex:outputPanel>
+                    </apex:repeat>
+                    <div style="{!sectionHeader}">
+                        CCM TEAM
+                    </div>
+                    <ol>
+                        <li>Primary Advisor: {!advisorName}</li>
+                        <li>Tax Advisor: {!taxName}</li>
+                        <li>Paraplanner: {!paraName}</li>
+                    </ol>
+                    <br/><br/>
+                    <div style="{!sectionFooter}">
+                        Our vision is to bring wisdom and purpose to wealth and enrich the lives of our clients and colleagues.
+                    </div>
+                </div>
+            </apex:form>
+        </body>
+    <!--</html>-->
+</apex:page>

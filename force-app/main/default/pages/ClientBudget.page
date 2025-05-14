@@ -1,0 +1,93 @@
+<apex:page showHeader="true" sidebar="true" tabStyle="Client_Budget__c" standardController="Client_Budget__c" extensions="ClientBudgetCtrl" action="{!onPageLoad}">
+    <style>
+        body div.bodyDiv table#bodyTable div#discoveryPage,body .x-btn button, body .btn, body .btnImportant, body .btnDisabled, body .btnCancel, body .menuButton .menuButtonButton, body .menuButton .menuButtonMenu a, body .menuButton .menuButtonMenu input.theOption, h1, h2, h3, h4, h5, h6, p,td.messageCell {
+            font-family: 'Verdana, Geneva, sans-serif';
+        }   
+        body div.bodyDiv table#bodyTable div#discoveryPage,body .menuButton .menuButtonMenu a, body .menuButton .menuButtonMenu input.theOption, h1, h2, h3, h4, h5, h6, p {
+            font-size:1.2em;
+        }   
+        body .x-btn button, body .btn, body .btnImportant, body .btnDisabled, body .btnCancel, body .menuButton .menuButtonButton {
+            font-size:0.9em;
+        }   
+        span.dateFormat {
+            visibility: hidden;
+        }
+        .pbSubheader h3 {
+            color:black;
+        }
+        textarea {
+            width:80%;
+        }
+        p.addInstructions {
+            padding:10px 0px 10px 0px;
+            font-size: 1.3em;       
+        }
+        table tbody tr.dataRow td.dataCell.rightAlign,table tbody tr.headerRow th.headerRow.rightAlign,table tbody tr.dataRow td.dataCell.rightAlign input,table.detailList tbody tr td table tfoot tr.totalRow th.totalRow {
+            text-align:right;
+        }
+    </style>    
+    <br/>
+    <!-- Page Messages -->
+    <apex:pageMessages id="msgs"/>
+    <apex:form >
+        <!-- To faciliate page-level querying (not specific field in controller) -->        
+        <apex:inputHidden value="{!Client_Budget__c.Total_Retirement_Monthly__c}"/>
+        <apex:inputHidden value="{!Client_Budget__c.Total_Retirement_Annual__c}"/> 
+        <apex:inputHidden value="{!Client_Budget__c.Total_Current_Monthly__c}"/> 
+        <apex:inputHidden value="{!Client_Budget__c.Total_Current_Annual__c}"/>                                                
+        
+        <apex:pageBlock >
+            <!-- Buttons -->        
+            <apex:pageBlockButtons location="both">
+                <apex:commandButton title="Save" value="Save" action="{!quickSaveItems}" reRender="msgs" disabled="{!isReadOnly}"/>
+                <apex:commandButton value="Cancel" action="{!cancel}"/>
+            </apex:pageBlockButtons>
+            
+            <!-- Basic Information -->
+            <apex:pageBlockSection collapsible="false" columns="1">
+                <p class="addInstructions">Please take time to complete the worksheet below. Totals update automatically. Alternatively, if you have your own budget report, you may provide to CCM.</p>               
+            </apex:pageBlockSection>
+
+            <!-- Worksheet: Budget Items -->
+            <apex:pageBlockSection title="CURRENT BUDGET" id="budgetItemSection" columns="1" collapsible="false">                     
+                <apex:pageBlockTable title="Current Budget Worksheet" value="{!lineItems}" var="i" id="budget_items">
+                    <apex:column headerValue="Item Type">
+                        <apex:outputField value="{!i.Name}" rendered="{!NOT(i.Editable_Name__c)}"/>
+                        <apex:inputField value="{!i.Name}" rendered="{!i.Editable_Name__c}"/>                      
+                        <apex:facet name="footer">Total Expenses</apex:facet>
+                    </apex:column>
+                    <apex:column headerClass="rightAlign" styleClass="rightAlign" headerValue="{!$ObjectType.Client_Budget_Item__c.fields.Current_Monthly_Expense__c.label}">
+                        <apex:inputField value="{!i.Current_Monthly_Expense__c}">
+                            <apex:actionSupport event="onchange" action="{!quickSaveItems}" reRender="budgetItemSection,msgs"/>
+                        </apex:inputField>
+                        <apex:facet name="footer"><apex:outputField value="{!aggregateFields.Total_Current_Monthly__c}"/></apex:facet>
+                    </apex:column>
+                    <apex:column headerClass="rightAlign" styleClass="rightAlign" headerValue="{!$ObjectType.Client_Budget_Item__c.fields.Current_Annual_Expense__c.label}">
+                        <apex:inputField value="{!i.Current_Annual_Expense__c}">
+                            <apex:actionSupport event="onchange" action="{!quickSaveItems}" reRender="budgetItemSection,msgs"/>
+                        </apex:inputField>
+                        <apex:facet name="footer"><apex:outputField value="{!aggregateFields.Total_Current_Annual__c}"/></apex:facet>
+                    </apex:column>                      
+                    <apex:column headerClass="rightAlign" styleClass="rightAlign" headerValue="{!$ObjectType.Client_Budget_Item__c.fields.Retirement_Monthly_Expense__c.label}">
+                        <apex:inputField value="{!i.Retirement_Monthly_Expense__c}">
+                            <apex:actionSupport event="onchange" action="{!quickSaveItems}" reRender="budgetItemSection,msgs"/>
+                        </apex:inputField>
+                        <apex:facet name="footer"><apex:outputField value="{!aggregateFields.Total_Retirement_Monthly__c}"/></apex:facet>
+                    </apex:column>
+                    <apex:column headerClass="rightAlign" styleClass="rightAlign" headerValue="{!$ObjectType.Client_Budget_Item__c.fields.Retirement_Annual_Expense__c.label}">
+                        <apex:inputField value="{!i.Retirement_Annual_Expense__c}">
+                            <apex:actionSupport event="onchange" action="{!quickSaveItems}" reRender="budgetItemSection,msgs"/>
+                        </apex:inputField>
+                        <apex:facet name="footer"><apex:outputField value="{!aggregateFields.Total_Retirement_Annual__c}"/></apex:facet>
+                    </apex:column>                                                                              
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>
+            
+            <!-- Budget Comments -->
+            <p class="addInstructions">If you have notes regarding any information above, please comment below.</p>            
+            <apex:inputField value="{!Client_Budget__c.Comments__c}">
+                <apex:actionSupport event="onchange" action="{!quickSaveItems}" reRender="msgs"/>
+            </apex:inputField>
+        </apex:pageBlock>   
+    </apex:form>
+</apex:page>

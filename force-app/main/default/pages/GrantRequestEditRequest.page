@@ -1,0 +1,28 @@
+<apex:page tabStyle="Contact_Us__tab" controller="GrantRequestEditContactController" sidebar="false">
+    <style>
+        body .bPageBlock, body .pbHeader, body .pbBody, body  .secondaryPalette.bPageBlock {
+            background-color: white !important;
+        }       
+    </style>
+    <apex:sectionHeader title="Grant Request - Edit Request" subtitle="Please use the form below to request changes to your grant request.">
+    </apex:sectionHeader>
+    <apex:form id="theForm">        
+        <apex:pageBlock id="mainBlock" mode="edit" rendered="{!NOT(submitted)}">
+            <apex:pageMessages />        
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton action="{!SaveRecord}" value="Submit" />                 
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection showHeader="false" columns="1">
+                <apex:pageBlockSectionItem >
+                    <apex:outputlabel for="editRequest" value="Grant Request Edit Details"></apex:outputlabel>
+                    <apex:inputTextarea richText="true" id="editRequest" value="{!thisBP.Grant_Request_Edit_Request__c}"/> 
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>                    
+        </apex:pageBlock>
+        <apex:pageBlock rendered="{!submitted}" >
+            <apex:pageBlockSection showHeader="false">
+                <apex:pageMessage summary="Thank you for contacting us! A member of the CCM Administrative Team will respond to your message shortly." severity="confirm" strength="1" />                
+            </apex:pageBlockSection>    
+        </apex:pageBlock>        
+    </apex:form>
+</apex:page>

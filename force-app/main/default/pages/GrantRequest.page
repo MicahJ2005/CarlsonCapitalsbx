@@ -1,0 +1,24 @@
+<apex:page showHeader="true" sidebar="false" standardController="FSTR__Business_Process__c" extensions="GrantRequestsController" tabStyle="ACPGrantRequests__tab" >
+    <apex:sectionHeader subtitle="{!FSTR__Business_Process__c.Charitable_Organization__r.Name}" title="Grant Request"></apex:sectionHeader>
+    <!-- Edit Request Link -->
+    <apex:pageBlock >
+        <apex:outputLink value="/apex/GrantRequestEditRequest?grantid={!FSTR__Business_Process__c.id}">Click here to send us a request if you need to edit this ACP grant request.</apex:outputLink>
+    </apex:pageBlock>    
+    <!-- Grant Request Fields -->
+    <apex:pageBlock title="Details">        
+        <apex:pageBlockSection collapsible="false" columns="1">            
+            <apex:repeat value="{!charOrgFieldPaths}" var="f">                     
+                <apex:outputField value="{!indReq[f]}"/>                         
+            </apex:repeat>                  
+        </apex:pageBlockSection>
+    </apex:pageBlock>
+    <!-- Grant Request Attachments -->
+    <apex:pageBlock title="Files" rendered="{!attachments!=null}">
+        <apex:pageBlockTable value="{!attachments}" var="a">
+            <apex:column headerValue="Title">
+                <apex:outputLink target="_blank" value="{!'/servlet/servlet.FileDownload?file='+a.Id}">{!a.Name}</apex:outputLink>
+            </apex:column>  
+            <apex:column value="{!a.CreatedDate}"/>
+        </apex:pageBlockTable>
+    </apex:pageBlock>   
+</apex:page>

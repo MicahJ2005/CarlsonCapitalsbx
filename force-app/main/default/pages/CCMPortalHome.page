@@ -1,0 +1,114 @@
+<apex:page showHeader="true" sidebar="false" controller="TermsCtrl">
+    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"></link>     -->
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css"></link>
+    <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>    
+    <style>
+        div#terms_conditions {
+          font-size:0.8em;
+        }
+        body div.bodyDiv table#bodyTable div#discoveryPage,body .x-btn button, body .btn, body .btnImportant, body .btnDisabled, body .btnCancel, body .menuButton .menuButtonButton, body .menuButton .menuButtonMenu a, body .menuButton .menuButtonMenu input.theOption, h1, h2, h3, h4, h5, h6, p {
+            font-family: 'Verdana, Geneva, sans-serif';
+        }   
+        body div.bodyDiv table#bodyTable div#discoveryPage,body .menuButton .menuButtonMenu a, body .menuButton .menuButtonMenu input.theOption, h1, h2, h3, h4, h5, h6, p {
+            font-size:1.5em;
+        }   
+        p.sectionInstruction {
+            font-size:1.5em;
+        }
+        div#backgroundSection {
+            display: block;
+            margin-right:auto;
+            margin-left:auto;
+            width:75%;
+            padding:10px;
+            margin-top:25px;
+            margin-bottom:25px;
+            /*background-color:white;*/
+            min-height: 100px;
+        }
+        h1.ccmSectionHeading {
+            font-size:2.0em;
+            display:block;
+            text-align:center;
+            width:100%;         
+        }
+        div.ui-widget-overlay {
+            opacity: 0.8;
+        }
+        .no-close .ui-dialog-titlebar-close {
+          display: none;
+        }        
+        .ui-dialog .ui-dialog-titlebar,.ui-dialog .ui-button {
+            background: #E2D0AA;            
+        }
+        .ui-dialog .ui-button {
+            font-weight:bold;
+        }
+        h2.pageDescription {
+            padding-top:10px;
+        }
+        h1.pageType {
+            display:none;
+        }
+    </style>
+    <apex:pageBlock >
+        <div id="backgroundSection">
+            <h1 class="ccmSectionHeading">Welcome!</h1>
+            <p class="sectionInstruction">      
+                Thank you for your interest in Carlson Capital Management. The Inventory Form and Questionnaire, along with the documents you collect and provide with them, are of significant importance as we assess your situation and develop a comprehensive financial plan specifically for you. We have found that the more thorough you can be in providing us with this information, the better job we can do in developing your plan. 
+            </p>
+            <p class="sectionInstruction">      
+                CCM’s Discovery Process is designed to foster dialogue and identify what is important to you in life, while providing our team with data and the records necessary for integrated planning. We encourage each spouse or co-client to provide input in this process by completing their own questionnaire form.
+            </p>
+            <p class="sectionInstruction">  
+                We appreciate the time you are taking to gather pertinent information and complete the forms. Please contact us should you have questions while completing.
+            </p>
+            <p class="sectionInstruction">  
+                You can access forms and questionnaires through the tabs above or via the links below:
+            </p>
+                <p><apex:outputLink target="_blank" value="apex/ClientInventory">Client Inventory Form</apex:outputLink> </p>
+                <p><apex:outputLink target="_blank" value="apex/ClientDiscovery">Client Discovery Questionnaire</apex:outputLink></p>
+                <p><apex:outputLink target="_blank" value="apex/ClientDiscovery?coclient=true">Co-Client Discovery Questionnaire</apex:outputLink></p>
+                <p><apex:outputLink target="_blank" value="apex/ClientBudget">Client Budget</apex:outputLink></p>
+        </div>
+        </apex:pageBlock>
+    <!-- modal for terms of use -->
+    <p id="signTerms" style="visibility:hidden;">{!signTerms}</p>      
+    <apex:outputPanel rendered="{!signTerms}">
+        <div id="terms_conditions" title="Client Portal Terms of Use" >
+            <div class="content">
+                <p>
+                    <apex:include id="terms_agreement" pageName="Terms" rendered="{!signTerms}"/>
+                </p>  
+            </div>   
+        </div>    
+    </apex:outputPanel>
+    <apex:form >    
+        <apex:actionFunction action="{!agreeSubmit}" name="agreeSubmit"></apex:actionFunction>
+    </apex:form>
+    <script type="text/javascript">    
+          $(function() {
+            console.log(document.getElementById("signTerms").innerHTML);
+            if (document.getElementById("signTerms").innerHTML==='true') {
+                $( "#terms_conditions" ).dialog({
+                  dialogClass: "no-close",
+                  modal: true,
+                  width:700,
+                  height:500,
+                  draggable: false,
+                  resizable: false,
+                  close: function() {
+                    $( "#terms_conditions" ).dialog( "open" );
+                  },
+                  buttons: [{
+                    text:"I Agree",
+                    click: function() {
+                      agreeSubmit();
+                    }
+                  }]                  
+                }).scrollTop(0);
+            }
+          });
+    </script>               
+</apex:page>

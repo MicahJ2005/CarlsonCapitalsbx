@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>57.0</apiVersion>
+    <isExposed>true</isExposed>
+    <targets>
+        <target>lightning__FlowScreen</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__FlowScreen">
+            <property name="NewOrClone" type="String" label="NewOrClone"/>
+            <property name="New_Grant" type="String" label="New_Grant"/>
+            <property name="Cloned_Grant" type="String" label="Cloned_Grant"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

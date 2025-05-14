@@ -1,0 +1,57 @@
+<apex:page standardController="Account" extensions="box.DisplayWidget" action="{!getLoginToken}" showHeader="false" sidebar="false" standardStylesheets="false">
+
+<head>
+<script type="text/javascript">
+    function addToBox() {
+        // Instantiate the Toolkit object
+        box.Toolkit toolkit = new box.Toolkit();
+        
+        Id accountId = {!Account.Id};
+        Id accountName = {!Account.Name};
+        
+        // Create a folder
+        String accountFolderId = boxToolkit.createFolder(accountName, 165434924630);
+        system.debug('new item folder id: ' + accountFolderId);
+        
+        // Associate Box folder with account
+        String accountFolderLink = boxToolkit.createFolderAssociation(accountId, accountFolderId);
+        system.debug('new item link id: ' + accountFolderLink);
+        
+        // mostRecentError will contain the error message
+        if(accountFolderId == null or accountFolderLink == null) {
+        system.debug('most recent error: ' + boxToolkit.mostRecentError);
+        }
+        
+        // ALWAYS call this method when finished.Since salesforce doesn't allow http callouts after dml operations, we need to commit the pending database inserts/updates or we will lose the associations created
+        boxToolkit.commitChanges();
+    }
+    </script>
+    </head>
+    <div class="container">
+        <apex:form id="formId">
+        <apex:outputPanel >
+        <apex:pageblock id="addContentPanel">
+            <apex:pageMessages />
+            <div class="outer-modal">
+                <div class="inner-modal">
+                    <h2 class="title">
+                        Add to Box
+                    </h2>
+                    <p class="paragraph">
+                        Description here
+                    </p>
+                    <div class="button-container">
+                        <apex:commandButton id="createFolder"
+                            styleClass="button primary-button"
+                            onclick="addToBox();"
+                            value="Add to Box"
+                        />
+                    </div>
+                </div>
+            </div>
+        </apex:pageblock>
+    </apex:outputPanel>
+    </apex:form>
+    </div>
+    
+</apex:page>

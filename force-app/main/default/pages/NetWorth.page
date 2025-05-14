@@ -1,0 +1,891 @@
+<!--
+  @description       : 
+  @author            : Michael Lloyd (Demand Chain)
+  @group             : 
+  @last modified on  : 12-22-2023
+  @last modified by  : Michael Lloyd (Demand Chain)
+-->
+<apex:page showHeader="false" sidebar="false" controller="NetWorthCtrl" standardStylesheets="false" applyHtmlTag="false" applyBodyTag="false" id="thePage" docType="html-5.0">
+    <head>
+      <title>CCM Net Worth</title>
+      <apex:stylesheet value="{!URLFOR($Resource.SLDS090, 'assets/styles/salesforce-lightning-design-system-vf.css')}" />
+        <style>
+            body {
+                font-family: 'Bembo','Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif;
+                font-size: 12px;
+                font-style: normal;
+                font-variant: normal;
+                font-weight: 500;
+                color:#000000;
+            }
+            .page_header_title {
+                font-family: 'Bembo','Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif;
+                font-size: 28px;
+                font-style: normal;
+                font-variant: normal;
+                font-weight: 500;
+                color: #ffffff;
+                background-color: #5E663A;
+                text-align: center;
+                padding-top: 10px;
+                padding-bottom: 5px;
+
+            }
+            .page_header_subtitle {
+                font-size: 12px;
+                font-weight: 100;
+                color: #ffffff !important;
+                background-color: #5E663A;
+                text-align: center;
+                padding-bottom: 10px;
+            }               
+            .networth_summary {
+                font-size: 14px;
+                font-weight: 100;
+                color: #ffffff !important;
+                background-color: #A37F14;
+                border: none;
+                padding-top: 5px;
+                padding-bottom: 5px;
+                word-wrap: inherit !important;
+            }
+            
+            .net_worth_total_row  {
+                font-weight: bold;
+                font-size: 15px;
+                font-weight: 500;
+                /*color: #000000;*/
+                color: #ffffff !important;      
+                background-color: #A37F14;
+                word-wrap: inherit;
+                border-bottom-style: double !important;
+            }           
+
+            .net_worth_asset_header {
+                font-weight: bold;
+                font-size: 13px;
+                font-weight: 500;
+                color: #000000;
+                background-color: #D9D9D9;
+                padding: 0px;
+                margin: 0px;
+                height: 0px;
+                border: 1px;
+                word-wrap: normal;
+            }
+            
+            .net_worth_outdated_value {
+                color: blue;
+            }
+            .estate_summary_header {
+                font-family: Bembo;
+                font-size: 28px;
+                font-style: normal;
+                font-variant: normal;
+                font-weight: 500;
+                color: #ffffff !important;
+                background-color: #A37F14;
+                text-align: top;
+                padding-top: 10px;
+                padding-bottom: 5px;
+                word-wrap: normal;
+            }
+            .estate_total_row {
+                word-wrap: normal;
+                border-bottom-style: double !important;
+                font-weight: bold;
+                /* TODO double bottom border */
+            }
+
+            tr.intra_section_total_row {
+                font-weight:bold;
+                font-size:1.1em;
+            }
+            
+            td.rmd {
+                color: #7C2128;
+                font-weight:bold;
+            }
+
+            .estate_subtotal_row {
+                word-wrap: normal;
+                font-weight: bold;
+                /*background-color: #c5cbaa;*/
+                background-color: #A37F14;     
+                color: #ffffff !important;      
+            }
+            .estate_grand_total_row {
+                border-bottom-style: double !important;
+                word-wrap: normal;
+                font-weight: bold;
+                /*background-color: #c5cbaa;*/
+                background-color: #A37F14;     
+                color: #ffffff !important;                      
+            }
+            
+            .estate_data_row {
+                word-wrap: normal;
+            }
+
+            tr.net_worth_total_row:hover,tr.estate_subtotal_row:hover,tr.estate_grand_total_row:hover {
+                color: #000000 !important;
+            }
+            tr td.total_assets_column {
+                text-align: right;
+            }
+            .slds-tabs__content {
+                word-wrap: normal;
+            }
+            .net_worth_bottom_row {
+                border: 1px;
+            }
+            
+            .second_class {
+                word-wrap: normal;
+            }           
+
+        </style>
+    </head>
+    <body>
+
+
+        <div class="slds" id="page_wrapper">  
+            <!-- PAGE MESSAGES -->
+            <apex:pageMessages id="msgs"/>
+            <apex:messages id="errMsgs"/>           
+            <div id="forceSpinner" class="slds-spinner--large" style="position:fixed;top:50%;left:50%;visibility:hidden;z-index:999;">
+              <img src="{!URLFOR($Resource.SLDS090, 'assets/images/spinners/slds_spinner_brand.gif')}" alt="Loading..." />
+            </div>          
+            <!-- PRIMARY DATA OUTPUT -->
+            <apex:outputPanel rendered="{!NOT(pageErrors)}" id="entire_page">
+
+                <!-- header section -->
+                <header>
+                    <div class="slds-text-heading--medium page_header_title">{!household.Name}</div>
+                    <div class="slds-text-heading--small page_header_subtitle">Net Worth As Of {!asOfDate}</div>
+                </header>       
+                <!-- FA EDIT MODAL -->
+                <div style="max-width:20%;font-size:0.8em;">
+                  <div id="fa_edit_modal" aria-hidden="false" role="dialog" class="slds-modal">
+                    <div class="slds-modal__container">
+                      <div class="slds-modal__header">
+                        <h2 class="slds-text-heading--medium">Edit Account</h2>
+                        <button class="slds-button slds-modal__close" onclick="closeModal();javascript:void(0);">
+                          <apex:image styleClass="slds-button__icon slds-button__icon--large" value="{!URLFOR($Resource.SLDS090, 'assets/icons/action/close_120.png')}" /> 
+                          <span class="slds-assistive-text">Close</span>
+                        </button>
+                      </div>
+                      <apex:form >   
+                        <apex:outputPanel layout="block" id="edit_fa">
+                          <div class="slds-modal__content">
+                            <div class="slds-col slds-size--3-of-6">      
+                                <!--<div class="slds-form-element">
+                                  <label class="slds-form-element__label" for="owner1">Owner 1</label>
+                                  <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon--right">
+                                        <apex:inputField id="owner1" value="{!editFA.Account_Owner_1__c}"/>         
+                                  </div>
+                                </div>    
+                                <div class="slds-form-element">
+                                  <label class="slds-form-element__label" for="owner2">Owner 2</label>
+                                  <div class="slds-form-element__control">         
+                                        <apex:inputField id="owner2" value="{!editFA.Account_Owner_2__c}"/> 
+                                  </div>
+                                </div>  REMOVED OWNER FIELDS ON 11/29/17 TO STOP SHOWING '(deceased)' AND TO PREVENT OWNER EDITS DIRECTLY FROM THE NET WORTH - Mike-->
+                                <div class="slds-form-element">
+                                  <label class="slds-form-element__label" for="type_option">Account Type</label>
+                                  <div class="slds-form-element__control">      
+                                    <apex:inputField styleClass="slds-input" id="type_option" value="{!editFA.FinServ__FinancialAccountType__c}"/>
+                                  </div>
+                                </div>      
+                                <div class="slds-form-element">
+                                  <label class="slds-form-element__label" for="type_classification">Classification</label>
+                                  <div class="slds-form-element__control">      
+                                    <apex:inputField styleClass="slds-input" id="type_classification" value="{!editFA.Net_Worth_Classification__c}"/>
+                                  </div>
+                                </div>                                                              
+                                <div class="slds-form-element">
+                                  <label class="slds-form-element__label" for="total_assets">Total Assets</label>
+                                  <div class="slds-form-element__control">         
+                                        <apex:inputField styleClass="slds-input" id="total_assets" value="{!editFA.FinServ__Balance__c}"/>  
+                                  </div>
+                                </div>                                                                                                                                          
+                            </div> 
+                            <div class="slds-col slds-size--3-of-6">
+                                <div class="slds-form-element">
+                                  <label class="slds-form-element__label" for="trust_box">Trust</label>
+                                  <div class="slds-form-element__control">      
+                                    <apex:inputField styleClass="slds-input" id="trust_box" value="{!editFA.Trust_Administration__c}"/>
+                                  </div>
+                                </div>     
+                                <div class="slds-form-element">
+                                  <label class="slds-form-element__label" for="closed_box">Account Active</label>
+                                  <div class="slds-form-element__control">      
+                                    <apex:inputField styleClass="slds-input" id="closed_box" value="{!editFA.OASP_FSC__Active__c}"/>
+                                  </div>
+                                </div>                                                                                  
+                            </div> 
+                            <div class="slds-form-element">
+                              <label class="slds-form-element__label" for="account_notes">Notes</label>
+                              <div class="slds-form-element__control">         
+                                    <apex:inputField styleClass="slds-input" id="account_notes" value="{!editFA.Account_Notes__c}"/>    
+                              </div>
+                            </div>                              
+                          </div>
+                        </apex:outputPanel>
+                        <apex:actionFunction action="{!saveEditValues}" name="saveEditValues" reRender="{$Component.thePage.summary_tab_panel}" oncomplete="closeModal();hideSpinner();"/>                
+                        <apex:actionFunction action="{!queryEditObj}" name="queryEditObj" reRender="edit_fa,msgs" oncomplete="hideSpinner();">
+                            <apex:param id="itemId" name="itemId" value=""/>
+                        </apex:actionFunction>                
+                      </apex:form>   
+                      <div class="slds-modal__footer">
+                        <button class="slds-button slds-button--neutral" onclick="javascript:void(0);closeModal();">Cancel</button>
+                        <button class="slds-button slds-button--neutral slds-button--brand" onclick="saveEditValues();">Save</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="modal_backdrop" class="slds-modal-backdrop slds-modal-backdrop--open"></div>
+                </div>
+                 <!-- / FA EDIT MODAL -->
+                 
+                <!-- FA EDIT ASSET MODAL -->
+                <div style="max-width:20%;font-size:0.8em;">
+                    <div id="asset_edit_modal" aria-hidden="false" role="dialog" class="slds-modal">
+                      <div class="slds-modal__container">
+                        <div class="slds-modal__header">
+                          <h2 class="slds-text-heading--medium">Edit Asset</h2>
+                          <button class="slds-button slds-modal__close" onclick="closeAssetModal();javascript:void(0);">
+                            <apex:image styleClass="slds-button__icon slds-button__icon--large" value="{!URLFOR($Resource.SLDS090, 'assets/icons/action/close_120.png')}" /> 
+                            <span class="slds-assistive-text">Close</span>
+                          </button>
+                        </div>
+                        <apex:form >   
+                          <apex:outputPanel layout="block" id="edit_asset">
+                            <div class="slds-modal__content">
+                              <div class="slds-col slds-size--3-of-6">      
+                                  <div class="slds-form-element">
+                                    <label class="slds-form-element__label" for="type_option">Account Type</label>
+                                    <div class="slds-form-element__control">      
+                                           <apex:inputField styleClass="slds-input" id="type_option" value="{!editAsset.FinServ__AssetsAndLiabilitiesType__c}"/>
+                                    </div>
+                                  </div>    
+                                  <div class="slds-form-element">
+                                    <label class="slds-form-element__label" for="total_assets">Total Assets</label>
+                                    <div class="slds-form-element__control">         
+                                          <apex:inputField styleClass="slds-input" id="total_assets" value="{!editAsset.Total_Assets__c}"/> 
+                                    </div>
+                                  </div>                                                                                                                                        
+                              </div> 
+                              <div class="slds-col slds-size--3-of-6">
+                                  <div class="slds-form-element">
+                                    <label class="slds-form-element__label" for="trust_box">Trust</label>
+                                    <div class="slds-form-element__control">      
+                                           <apex:inputField styleClass="slds-input" id="trust_box" value="{!editAsset.Trust__c}"/>
+                                    </div>
+                                  </div>     
+                                  <div class="slds-form-element">
+                                    <label class="slds-form-element__label" for="closed_box">Account Closed</label>
+                                    <div class="slds-form-element__control">      
+                                           <apex:inputField styleClass="slds-input" id="closed_box" value="{!editAsset.Closed__c}"/>
+                                    </div>
+                                  </div>                                                                                    
+                              </div> 
+                              <div class="slds-form-element">
+                                <label class="slds-form-element__label" for="account_notes">Notes</label>
+                                <div class="slds-form-element__control">         
+                                      <apex:inputField styleClass="slds-input" id="account_notes" value="{!editAsset.Account_Notes__c}"/>   
+                                </div>
+                              </div>                                
+                            </div>
+                          </apex:outputPanel>
+                          <apex:actionFunction action="{!saveEditAssetValues}" name="saveEditAssetValues" reRender="{$Component.thePage.summary_tab_panel}" oncomplete="closeModal();hideSpinner();"/>                
+                          <apex:actionFunction action="{!queryEditAssetObj}" name="queryEditAssetObj" reRender="edit_asset,msgs" oncomplete="hideSpinner();">
+                              <apex:param id="itemId" name="itemId" value=""/>
+                          </apex:actionFunction>                  
+                        </apex:form>   
+                        <div class="slds-modal__footer">
+                          <button class="slds-button slds-button--neutral" onclick="javascript:void(0);closeAssetModal();">Cancel</button>
+                          <button class="slds-button slds-button--neutral slds-button--brand" onclick="saveEditAssetValues();">Save</button>
+                        </div>
+                      </div>
+                    </div>
+                    <div id="asset_modal_backdrop" class="slds-modal-backdrop slds-modal-backdrop--open"></div>
+                </div>
+                <!-- / FA ASSET MODAL -->  
+
+                <!-- INSURANCE EDIT MODAL -->
+                <div style="max-width:20%;font-size:0.8em;">
+                  <div id="ins_edit_modal" aria-hidden="false" role="dialog" class="slds-modal">
+                    <div class="slds-modal__container">
+                      <div class="slds-modal__header">
+                        <h2 class="slds-text-heading--medium">Edit Insurance</h2>
+                        <button class="slds-button slds-modal__close" onclick="closeInsModal();javascript:void(0);">
+                          <apex:image styleClass="slds-button__icon slds-button__icon--large" value="{!URLFOR($Resource.SLDS090, 'assets/icons/action/close_120.png')}" /> 
+                          <span class="slds-assistive-text">Close</span>
+                        </button>
+                      </div>
+                      <apex:form >   
+                        <apex:outputPanel layout="block" id="edit_ins">
+                          <div class="slds-modal__content">
+                            <div class="slds-col slds-size--3-of-6">
+                                <apex:outputPanel rendered="{!AND(editIns.RecordTypeId!=null,insRTMap[editIns.RecordTypeId]=='Advisor Entered')}">                                  
+                                    <div class="slds-form-element">
+                                      <label class="slds-form-element__label" for="closed_box">Policy Owner</label>
+                                      <div class="slds-form-element__control">                                  
+                                        <apex:inputField value="{!editIns.Policy_Owner__c}" rendered="{!AND(editIns.RecordTypeId!=null,insRTMap[editIns.RecordTypeId]=='Advisor Entered')}"/>
+
+                                      </div>
+                                    </div>  
+                                </apex:outputPanel>
+                                <apex:outputPanel rendered="{!AND(editIns.RecordTypeId!=null,insRTMap[editIns.RecordTypeId]=='Advisor Entered')}">                                      
+                                <div class="slds-form-element">
+                                  <label class="slds-form-element__label" for="closed_box">Product Type</label>
+                                  <div class="slds-form-element__control">                                      
+                                    <apex:inputField value="{!editIns.PolicyType}" rendered="{!AND(editIns.RecordTypeId!=null,insRTMap[editIns.RecordTypeId]=='Advisor Entered')}"/>
+
+                                  </div>
+                                </div>  
+                                </apex:outputPanel>
+                                <div class="slds-form-element">
+                                  <label class="slds-form-element__label" for="closed_box">Cash Surrender Value</label>
+                                  <div class="slds-form-element__control">                                      
+                                    <apex:inputField value="{!editIns.CashSurrenderValue}" rendered="{!AND(editIns.RecordTypeId!=null,insRTMap[editIns.RecordTypeId]=='Advisor Entered')}"/>
+                                    <apex:outputField value="{!editIns.CashSurrenderValue}" rendered="{!AND(editIns.RecordTypeId!=null,insRTMap[editIns.RecordTypeId]!='Advisor Entered')}"/>
+                                  </div>
+                                </div>  
+                                <apex:outputPanel rendered="{!AND(editIns.RecordTypeId!=null,insRTMap[editIns.RecordTypeId]=='Advisor Entered')}">                                      
+                                <div class="slds-form-element">
+                                  <label class="slds-form-element__label" for="closed_box">Values As Of</label>
+                                  <div class="slds-form-element__control">                                      
+                                    <apex:inputField value="{!editIns.Values_As_Of__c}" rendered="{!AND(editIns.RecordTypeId!=null,insRTMap[editIns.RecordTypeId]=='Advisor Entered')}"/>
+                                  </div>
+                                </div>  
+                                </apex:outputPanel>                                                     
+                            </div>                          
+                            <div class="slds-col slds-size--3-of-6"> 
+                                <div class="slds-form-element">
+                                  <label class="slds-form-element__label" for="closed_box">Death Benefit</label>
+                                  <div class="slds-form-element__control">                                      
+                                    <apex:inputField value="{!editIns.Death_Benefit__c}" rendered="{!AND(editIns.RecordTypeId!=null,insRTMap[editIns.RecordTypeId]=='Advisor Entered')}"/>
+                                    <apex:outputField value="{!editIns.Death_Benefit__c}" rendered="{!AND(editIns.RecordTypeId!=null,insRTMap[editIns.RecordTypeId]!='Advisor Entered')}"/>
+                                  </div>
+                                </div> 
+                                <apex:outputPanel rendered="{!AND(editIns.RecordTypeId!=null,insRTMap[editIns.RecordTypeId]=='Advisor Entered')}">                          
+                                    <div class="slds-form-element">
+                                      <label class="slds-form-element__label" for="closed_box">Trustee</label>
+                                      <div class="slds-form-element__control">                                      
+                                        <apex:inputField value="{!editIns.Trustee__c}" />
+                                      </div>
+                                    </div>  
+                                    <div class="slds-form-element">
+                                      <label class="slds-form-element__label" for="closed_box">Policy Closed</label>
+                                      <div class="slds-form-element__control">      
+                                        <apex:inputField value="{!editIns.IsActive}" />
+                                      </div>
+                                    </div>                                                                                  
+                                </apex:outputPanel>
+                                <div class="slds-form-element">
+                                  <label class="slds-form-element__label" for="closed_box">Notes</label>
+                                  <div class="slds-form-element__control">                                      
+                                    <apex:inputField id="ins_notes" value="{!editIns.Net_Worth_Notes__c}" />
+                                  </div>
+                                </div>      
+                            </div> 
+                          </div>
+                        </apex:outputPanel>                     
+                        <apex:actionFunction action="{!saveEditInsValues}" name="saveEditInsValues" reRender="{$Component.thePage.entire_page}" oncomplete="hideSpinner();"/>                 
+                        <apex:actionFunction action="{!queryEditInsObj}" name="queryEditInsObj" reRender="edit_ins,msgs" oncomplete="hideSpinner();">
+                            <apex:param id="itemId" name="itemId" value=""/>
+                        </apex:actionFunction>                
+                      </apex:form>   
+                      <div class="slds-modal__footer">
+                        <button class="slds-button slds-button--neutral" onclick="javascript:void(0);closeInsModal();">Cancel</button>
+                        <button class="slds-button slds-button--neutral slds-button--brand" onclick="closeInsModal();saveEditInsValues();">Save</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div id="ins_modal_backdrop" class="slds-modal-backdrop slds-modal-backdrop--open"></div>
+                </div>
+
+                <!-- TABS SECTION -->
+                <apex:outputPanel id="summary_tab_panel">         
+                <div class="myapp">    
+                    <div class="slds-tabs--default">
+                      <ul class="slds-tabs--default__nav" role="tablist">
+                        <li id="tab1Id" class="slds-tabs__item slds-text-heading--label slds-active" title="Net Worth" role="presentation"><a href="#" role="tab" tabindex="0" aria-selected="true" aria-controls="tab-default-1" onclick="setTab(0);">Net Worth</a></li>
+                        <li id="tab2Id" class="slds-tabs__item slds-text-heading--label" title="Estate Summary" role="presentation"><a href="#" role="tab" tabindex="-1" aria-selected="Estate" aria-controls="tab-default-2" onclick="setTab(1);">Estate Summary</a></li>
+                        <li id="tab3Id" class="slds-tabs__item slds-text-heading--label" title="Investment Snapshot" role="presentation"><a href="#" role="tab" tabindex="-1" aria-selected="Snapshot" aria-controls="tab-default-3" onclick="setTab(2);">Investment Snapshot</a></li>
+                      </ul>
+                        <!-- NET WORTH SUMMARY -->          
+                        <apex:outputPanel id="net_worth_panel">       
+                            <div id="tab-default-1" class="slds-tabs__content slds-show summary_row" role="tabpanel">
+                                <div class="slds-grid">
+                                    <table class="slds-table slds-table--bordered">
+                                        <thead>                             
+                                            <tr class="slds-text-heading--label networth_summary">
+                                                <th scope="col">
+                                                  <span class="slds-truncate"></span>
+                                                </th>
+                                                <th scope="col">
+                                                  <span class="slds-truncate">Owner</span>
+                                                </th>
+                                                <th scope="col">
+                                                  <span class="slds-truncate">Account #</span>
+                                                </th>
+                                                <th scope="col">
+                                                  <span class="slds-truncate">Total Assets</span>
+                                                </th>
+                                                <th>
+                                                  <span class="slds-truncate">Beneficiaries and Notes</span>
+                                                </th>                                       
+                                            </tr>           
+                                        </thead>            
+                                        <!-- on balance sheet assets -->
+                                        <apex:repeat value="{!categorySortMap}" var="key">
+                                            <apex:outputPanel rendered="{!AND(liquidAssets!=null,CONTAINS(liquidAssetCategoryString,';'+key))}">
+                                            <!-- <apex:repeat value="{!liquidAssets}" var="key"> -->
+                                                <tr class="{!IF(CONTAINS(totalRowMapString,key),'net_worth_total_row second_class','net_worth_asset_header')}">
+                                                    <td >
+                                                        <p><strong>{!key}</strong></p>  
+                                                    </td>
+                                                    <td></td>       
+                                                    <td></td>       
+                                                    <td class="total_assets_column">
+                                                            <apex:outputText value="{0, number, $###,###}" rendered="{!CONTAINS(totalRowMapString,key)}">
+                                                                <apex:param value="{!totalRowMap[key]}"/>
+                                                            </apex:outputText>  
+                                                    </td>
+                                                    <td></td>       
+                                                </tr>
+                                                <apex:repeat value="{!liquidAssets[key]}" var="acct">
+                                                    <tr class="{!IF(CONTAINS(acct.itemOwner,'Total'),'intra_section_total_row data_row','data_row')}" ondblclick="editValues('{!acct.itemId}',{!acct.isFinAcct},{!acct.isPCAccount},{!acct.isAdvisorEntered});">
+                                                        <td class="">
+                                                            <apex:outputText value="{!acct.itemName+(IF(acct.isTrust,' +',''))}" /> 
+                                                        </td>
+                                                        <td>
+                                                            <apex:outputText value="{!SUBSTITUTE(acct.itemOwner, ' (deceased)','')}"/>
+                                                        </td>
+                                                        <td>
+                                                            <apex:outputText value="{!acct.accountNumber}"/>
+                                                        </td>
+                                                        <td class="total_assets_column" style="color:{!if(acct.itemDate <= today()-365, 'Blue', 'Black')}">
+                                                            <apex:outputText value="{0, number, $###,###}">
+                                                                <apex:param value="{!acct.netValue}"/>
+                                                            </apex:outputText>          
+                                                        </td>
+                                                        <td class="slds-cell-wrap">
+                                                            <apex:outputText value="{!acct.itemNotes}" />
+                                                        </td>
+                                                    </tr>
+                                                </apex:repeat>
+                                            </apex:outputPanel>
+                                        <!-- </apex:repeat> -->
+                                        </apex:repeat>
+                                        <!-- other assets -->
+                                        <apex:repeat value="{!categorySortMap}" var="key">
+                                            <apex:outputPanel rendered="{!AND(otherAssets!=null,CONTAINS(otherAssetsCategoryString,';'+key))}">         
+                                            <!-- <apex:repeat value="{!otherAssets}" var="key"> -->
+                                                <tr class="{!IF(CONTAINS(totalRowMapString,key),'net_worth_total_row','net_worth_asset_header')}">
+                                                    <td >
+                                                        <p><strong>{!key}</strong></p>  
+                                                    </td>       
+                                                    <td></td>       
+                                                    <td></td>       
+                                                    <td class="total_assets_column">
+                                                            <apex:outputText value="{0, number, $###,###}" rendered="{!CONTAINS(totalRowMapString,key)}">
+                                                                <apex:param value="{!totalRowMap[key]}"/>
+                                                            </apex:outputText>  
+                                                    </td>
+                                                    <td></td>       
+                                                </tr>
+                                                <apex:repeat value="{!otherAssets[key]}" var="acct">
+                                                    <tr class="{!IF(CONTAINS(acct.itemOwner,'Total'),'intra_section_total_row data_row','data_row')}" ondblclick="editValues('{!acct.itemId}',{!acct.isFinAcct},{!acct.isPCAccount},{!acct.isAdvisorEntered});">
+                                                        <td>
+                                                            <apex:outputText value="{!acct.itemName+(IF(acct.isTrust,' +',''))}" /> 
+                                                        </td>
+                                                        <td>
+                                                            <apex:outputText value="{!SUBSTITUTE(acct.itemOwner, ' (deceased)','')}"/>
+                                                        </td>
+                                                        <td>
+                                                            <apex:outputText value="{!acct.accountNumber}"/>
+                                                        </td>
+                                                        <td class="total_assets_column">
+                                                            <apex:outputText value="{0, number, $###,###}">
+                                                                <apex:param value="{!acct.netValue}"/>
+                                                            </apex:outputText>      
+                                                        </td>
+                                                        <td class="slds-cell-wrap">
+                                                            <apex:outputText style="word-wrap:normal;" value="{!acct.itemNotes}" />
+                                                        </td>
+                                                    </tr>
+                                                </apex:repeat>
+                                            </apex:outputPanel>
+                                        </apex:repeat>          
+                                        <!-- death benefits -->
+                                        <apex:repeat value="{!deathBenefits}" var="key">
+                                            <tr class="{!IF(CONTAINS(totalRowMapString,key),'net_worth_total_row','net_worth_asset_header')}">
+                                                <td >
+                                                    <p><strong>{!key}</strong></p>  
+                                                </td>       
+                                                <td></td>       
+                                                <td></td>       
+                                                <td class="total_assets_column">
+                                                        <apex:outputText value="{0, number, $###,###}" rendered="{!CONTAINS(totalRowMapString,key)}">
+                                                            <apex:param value="{!totalRowMap[key]}"/>
+                                                        </apex:outputText>  
+                                                </td>
+                                                <td></td>       
+                                            </tr>
+                                            <apex:repeat value="{!deathBenefits[key]}" var="acct">
+                                                <tr class="{!IF(CONTAINS(acct.itemOwner,'Total'),'intra_section_total_row data_row','data_row')}" ondblclick="editValues('{!acct.itemId}',{!acct.isFinAcct},{!acct.isPCAccount},{!acct.isAdvisorEntered});">
+                                                    <td>
+                                                        <apex:outputText value="{!acct.itemName+(IF(acct.isTrust,' +',''))}" /> 
+                                                    </td>
+                                                    <td>
+                                                        <apex:outputText value="{!SUBSTITUTE(acct.itemOwner, ' (deceased)','')}"/>
+                                                    </td>
+                                                    <td>
+                                                        <apex:outputText value="{!acct.accountNumber}"/>
+                                                    </td>
+                                                    <td class="total_assets_column">
+                                                        <apex:outputText value="{0, number, $###,###}">
+                                                            <apex:param value="{!acct.netValue}"/>
+                                                        </apex:outputText>              
+                                                    </td>
+                                                    <td class="slds-cell-wrap">
+                                                        <apex:outputText style="word-wrap:normal;" value="{!acct.itemNotes}" />
+                                                    </td>
+                                                </tr>
+                                            </apex:repeat>
+                                        </apex:repeat>
+                                        <!-- off-balance sheet assets -->
+                                        <apex:repeat value="{!categorySortMap}" var="key">
+                                            <apex:outputPanel rendered="{!AND(outsideAssets!=null,key!='Total Estate',CONTAINS(outsideAssetsCategoryString,';'+key))}"> 
+                                            <!-- <apex:repeat value="{!outsideAssets}" var="key"> -->
+                                                <tr class="{!IF(CONTAINS(totalRowMapString,key),'net_worth_total_row','net_worth_asset_header')}">
+                                                    <td >
+                                                        <p><strong>{!key}</strong></p>  
+                                                    </td>       
+                                                    <td></td>       
+                                                    <td></td>       
+                                                    <td class="total_assets_column">
+                                                            <apex:outputText value="{0, number, $###,###}" rendered="{!CONTAINS(totalRowMapString,key)}">
+                                                                <apex:param value="{!totalRowMap[key]}"/>
+                                                            </apex:outputText>  
+                                                    </td>
+                                                    <td></td>       
+                                                </tr>
+                                                <apex:repeat value="{!outsideAssets[key]}" var="acct">
+                                                    <tr class="{!IF(CONTAINS(acct.itemOwner,'Total'),'intra_section_total_row data_row','data_row')}" ondblclick="editValues('{!acct.itemId}',{!acct.isFinAcct},{!acct.isPCAccount},{!acct.isAdvisorEntered});">
+                                                        <td>
+                                                            <apex:outputText value="{!acct.itemName+(IF(acct.isTrust,' +',''))}" /> 
+                                                        </td>
+                                                        <td>
+                                                            <apex:outputText value="{!SUBSTITUTE(acct.itemOwner, ' (deceased)','')}"/>
+                                                        </td>
+                                                        <td>
+                                                            <apex:outputText value="{!acct.accountNumber}"/>
+                                                        </td>
+                                                        <td class="total_assets_column">
+                                                            <apex:outputText value="{0, number, $###,###}">
+                                                                <apex:param value="{!acct.netValue}"/>
+                                                            </apex:outputText>                   
+                                                        </td>
+                                                        <td class="slds-cell-wrap">
+                                                            <apex:outputText style="word-wrap:normal;" value="{!acct.itemNotes}" />
+                                                        </td>
+                                                    </tr>
+                                                </apex:repeat>
+                                            </apex:outputPanel>                                     
+                                        </apex:repeat>      
+                                        <tr class="net_worth_bottom_row"></tr>                      
+                                    </table>                                                                
+                                </div>
+                                <br/>
+                                <p>
+                                    + Denotes an account in Trust
+                                </p>
+                                <br/>
+                                <p>
+                                    This statement was produced using information currently available to Carlson Capital Management’s Advisory team, some of which was sourced by the client.  All data should be reviewed by the client to ensure accuracy.  As specifically related to beneficiary designations and titled assets, the following disclaimers apply: (1) clients are solely responsible for ensuring that beneficiary forms are updated and consistent with the client’s wishes; (2) beneficiaries noted on this statement may not reflect the client’s most recent updates with the custodian; and (3) clients are solely responsible for ensuring that assets are properly titled.  This statement is not intended for and not appropriate for use by third parties.                                 
+                                </p>
+                                <br/>
+                                <apex:form id="generatePDFForm">
+                                  <apex:inputCheckbox value="{!maskAccountNumbers}" id="maskAccountNumbers"/>
+                                  <apex:outputLabel value="Mask Account Numbers" for="maskAccountNumbers"/>
+                                  <br></br>
+                                  <apex:inputCheckbox value="{!uploadToBox}" id="uploadToBox"/>
+                                  <apex:outputLabel value="Upload To Box" for="uploadToBox"/>
+                                  <br></br>
+                                  <apex:outputPanel id="button">
+                                      <apex:commandButton disabled="{!disableGeneratePDFButton}" styleClass="slds-button slds-button--neutral" action="{!generatePDF}" value="Generate PDF">
+                                          <apex:actionSupport event="onclick" action="{!captureButtonClick}" reRender="button"/>
+                                      </apex:commandButton>
+                                  </apex:outputPanel>
+                                </apex:form>
+                                
+                                <!--<a class="slds-button slds-button--neutral" href="/apex/NetWorthPDF?id={!household.Id}" target="_blank">Generate PDF</a>-->
+                                 
+                                
+                            </div>  
+                        </apex:outputPanel>     
+                        <!-- / NET WORTH SUMMARY -->
+                        <!-- ESTATE SUMMARY -->
+                        <apex:outputPanel id="estate_summary_panel">
+                            <div id="tab-default-2" class="slds-tabs__content slds-hide" role="tabpanel">
+                                <div class="page_body">
+                                    <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal">
+                                        <thead>                             
+                                            <tr class="slds-text-heading--label estate_summary_header">
+                                                <th scope="col">
+                                                  <span class="slds-truncate"></span>
+                                                </th>
+                                                <th scope="col">
+                                                  <span class="slds-truncate">Joint</span>
+                                                </th>
+                                                <th scope="col">
+                                                  <span class="slds-truncate">{!primaryName}</span>
+                                                </th>                                           
+                                                <th scope="col">
+                                                  <span class="slds-truncate">{!spouseName}</span>
+                                                </th>
+                                                <th scope="col">
+                                                  <span class="slds-truncate">Other</span>
+                                                </th>
+                                                <th scope="col">
+                                                  <span class="slds-truncate">TOTAL</span>
+                                                </th>
+                                            </tr>           
+                                        </thead>                                                    
+                                        <!-- estate summary grid -->
+                                        <apex:repeat value="{!finalEstateLayout}" var="acct">
+                                            <tr class="{!IF(acct.categoryName=='Grand Total Estate','estate_grand_total_row',IF(OR(acct.categoryName=='Total Estate',acct.categoryName=='Total Outside Estate'),'estate_total_row',IF(acct.isTotalRow,'estate_subtotal_row','estate_data_row')))}">
+                                                <td>
+                                                    <apex:outputText value="{!acct.categoryName}" />    
+                                                </td>
+                                                <td>
+                                                    <apex:outputText value="{0, number, $###,###}" rendered="{!acct.jointTotal!=0}">
+                                                        <apex:param value="{!acct.jointTotal}"/>
+                                                    </apex:outputText>  
+                                                    <apex:outputText value="-" rendered="{!AND(NOT(acct.isBlankRow),acct.jointTotal==0)}"/>
+                                                </td>
+                                                <td>
+                                                    <apex:outputText value="{0, number, $###,###}" rendered="{!acct.client1Total!=0}">
+                                                        <apex:param value="{!acct.client1Total}"/>
+                                                    </apex:outputText>  
+                                                    <apex:outputText value="-" rendered="{!AND(NOT(acct.isBlankRow),acct.client1Total==0)}"/>
+                                                </td>
+                                                <td>
+                                                    <apex:outputText value="{0, number, $###,###}" rendered="{!acct.client2Total!=0}">
+                                                        <apex:param value="{!acct.client2Total}"/>
+                                                    </apex:outputText>  
+                                                    <apex:outputText value="-" rendered="{!AND(NOT(acct.isBlankRow),acct.client2Total==0)}"/>
+                                                </td>
+                                                <td>
+                                                    <apex:outputText value="{0, number, $###,###}" rendered="{!acct.otherTotal!=0}">
+                                                        <apex:param value="{!acct.otherTotal}"/>
+                                                    </apex:outputText>  
+                                                    <apex:outputText value="-" rendered="{!AND(NOT(acct.isBlankRow),acct.otherTotal==0)}"/>
+                                                </td>
+                                                <td>
+                                                    <apex:outputText value="{0, number, $###,###}" rendered="{!acct.totalValue!=0}">
+                                                        <apex:param value="{!acct.totalValue}"/>
+                                                    </apex:outputText>                                          
+                                                    <apex:outputText value="-" rendered="{!AND(NOT(acct.isBlankRow),acct.totalValue==0)}"/>
+                                                </td>                                       
+                                            </tr>
+                                        </apex:repeat>
+                                    </table>                                                                    
+                                </div>
+                                <br/>
+                                <p>
+                                    This statement was produced using information currently available to Carlson Capital Management’s Advisory team, some of which was sourced by the client.  All data should be reviewed by the client to ensure accuracy.  As specifically related to beneficiary designations and titled assets, the following disclaimers apply: (1) clients are solely responsible for ensuring that beneficiary forms are updated and consistent with the client’s wishes; (2) beneficiaries noted on this statement may not reflect the client’s most recent updates with the custodian; and (3) clients are solely responsible for ensuring that assets are properly titled.  This statement is not intended for and not appropriate for use by third parties.     
+                                </p>                            
+                                <a class="slds-button slds-button--neutral" href="/apex/EstateSummaryPDF?id={!household.Id}" target="_blank">Generate PDF</a>
+                            </div>
+                        </apex:outputPanel>
+                        <!-- / ESTATE SUMMARY -->
+
+                        <!-- Portfolio Monitoring Activity -->
+                        <apex:outputPanel id="monitoring_panel">
+                            <div id="tab-default-3" class="slds-tabs__content slds-hide" role="tabpanel">
+                                <div class="page_body">
+                                    <apex:pageBlock >
+                                        <apex:pageBlockSection columns="2">
+                                            <apex:outputField value="{!householdRebalancing.Name}"/>
+                                            <apex:outputField value="{!householdRebalancing.Client_Inception_Date__c}"/>
+                                            <apex:outputField value="{!householdRebalancing.Model__c}"/>
+                                            <apex:outputField value="{!householdRebalancing.OASP_FSC__Realized_G_L_YTD__c}"/>
+                                        </apex:pageBlockSection>
+                                    </apex:pageBlock>
+                                    <br />
+                                    <table class="slds-table slds-table--bordered slds-max-medium-table--stacked-horizontal">
+                                        <thead>                             
+                                            <tr class="slds-text-heading--label estate_summary_header">
+                                                <th scope="col">
+                                                    <span class="slds-truncate">Activity</span>
+                                                </th>
+                                                <th scope="col">
+                                                    <span class="slds-truncate">Trade Date</span>
+                                                </th>
+                                                <th scope="col">
+                                                    <span class="slds-truncate">Subject</span>
+                                                </th>                                         
+                                                <!--<th scope="col">
+                                                    <span class="slds-truncate">Reviewed</span>
+                                                </th>-->                                         
+                                                <th scope="col">
+                                                    <span class="slds-truncate">Traded</span>
+                                                </th>                                         
+                                                <th scope="col">
+                                                    <span class="slds-truncate">Trade Details</span>
+                                                </th>                                         
+                                            </tr>           
+                                        </thead>                                                    
+                                        <!-- estate summary grid -->
+                                        <apex:repeat value="{!householdRebalancing.FinServ__HouseholdCases__r}" var="c">
+                                            <tr class="">
+                                                <td>
+                                                    <apex:outputText value="Trade Placed" />   
+                                                </td>
+                                                <td>
+                                                    <apex:outputText value="{0,date,MM'/'dd'/'yy}"> <apex:param value="{!c.FSTR__Due_Date__c}" /> </apex:outputText>
+                                                </td>
+                                                <td>
+                                                    <apex:outputText value="{!c.Subject}" /> 
+                                                </td>
+                                                <!--<td>
+                                                    <apex:outputPanel rendered="{!r.Reviewed__c}">
+                                                        <img src="/sfc/servlet.shepherd/version/renditionDownload?rendition=ORIGINAL_Png&versionId=0686g0000064mZQ&operationContext=CHATTER&contentId=05T6g00000Z7ZnD" alt="Traded" data-aura-rendered-by="749:0" border="0" />
+                                                    </apex:outputPanel>
+                                                </td>-->
+                                                <td>
+                                                    <!--<apex:outputPanel rendered="{!r.Traded__c}">-->
+                                                    <apex:outputPanel >
+                                                        <img src="/sfc/servlet.shepherd/version/renditionDownload?rendition=ORIGINAL_Png&versionId=0686g0000064mZQ&operationContext=CHATTER&contentId=05T6g00000Z7ZnD" alt="Traded" data-aura-rendered-by="749:0" border="0" />
+                                                    </apex:outputPanel>
+                                                </td>
+                                                <td>
+                                                    <!--<apex:outputLink value="{! '/' + r.Trade__c}" rendered="{!r.Trade__c != null}">{!r.Trade__r.CaseNumber}</apex:outputLink>-->
+                                                    <apex:outputLink value="/lightning/r/Case/{!c.Id}/related/Trade_Details__r/view" >Details</apex:outputLink>
+                                                </td>
+                                            </tr>
+                                        </apex:repeat>
+                                    </table>                                                                    
+                                </div>
+                            </div>
+                        </apex:outputPanel>
+                        <!-- / Portfolio Monitoring Activity -->
+                    </div>
+                </div>
+                </apex:outputPanel>
+                <apex:form >
+                    <apex:inputHidden id="editObjectId" value="{!editObjectId}" />
+                </apex:form>
+            </apex:outputPanel>
+        </div>
+        <script type="text/javascript">
+            function editValues(itemId,isFinAcct,isPCAcct,isAdvEntered) {
+                console.log('itemId: '+itemId+', finAcct? '+isFinAcct);
+                if (itemId) {
+                    if (isFinAcct) {
+                        if (isPCAcct) {
+                            queryEditObj(itemId);
+                            openModal();
+                        }
+                        else {
+                            queryEditAssetObj(itemId);
+                            openAssetModal();
+                        }
+                    } else {
+                        //  advisor-entered insurance
+                        queryEditInsObj(itemId);
+                        openInsModal(); 
+                    }
+                } else {
+                    console.log('no item id - doing nothing');
+                }
+            }
+            function setTab(tabNum) {
+                var tab1 = document.getElementById('tab-default-1');
+                var tab2 = document.getElementById('tab-default-2');
+                var tab3 = document.getElementById('tab-default-3');
+                if (tabNum===0) {
+                    tab1.setAttribute('class','slds-tabs__content slds-show');
+                    tab2.setAttribute('class','slds-tabs__content slds-hide');
+                    tab3.setAttribute('class','slds-tabs__content slds-hide');
+                    tab1Id.setAttribute('class','slds-tabs__item slds-text-heading--label slds-active');
+                    tab2Id.setAttribute('class','slds-tabs__item slds-text-heading--label');
+                    tab3Id.setAttribute('class','slds-tabs__item slds-text-heading--label');
+                } else if (tabNum===1) {
+                    tab2.setAttribute('class','slds-tabs__content slds-show');
+                    tab1.setAttribute('class','slds-tabs__content slds-hide');
+                    tab3.setAttribute('class','slds-tabs__content slds-hide');
+                    tab2Id.setAttribute('class','slds-tabs__item slds-text-heading--label slds-active');
+                    tab1Id.setAttribute('class','slds-tabs__item slds-text-heading--label');
+                    tab3Id.setAttribute('class','slds-tabs__item slds-text-heading--label');
+                } else if (tabNum===2) {
+                    tab3.setAttribute('class','slds-tabs__content slds-show');
+                    tab1.setAttribute('class','slds-tabs__content slds-hide');
+                    tab2.setAttribute('class','slds-tabs__content slds-hide');
+                    tab3Id.setAttribute('class','slds-tabs__item slds-text-heading--label slds-active');
+                    tab1Id.setAttribute('class','slds-tabs__item slds-text-heading--label');
+                    tab2Id.setAttribute('class','slds-tabs__item slds-text-heading--label');
+                }
+            }
+            var spinnerEl = document.getElementById('forceSpinner');
+          
+            var showSpinner = function() {
+                spinnerEl.style.visibility = 'visible';             
+            };
+            var hideSpinner = function() {
+                spinnerEl.style.visibility = 'hidden';
+            };  
+            
+            function closeModal() {
+                var modalEl = document.getElementById('fa_edit_modal');
+                var pageEl = document.getElementById('page_wrapper');   
+                document.getElementById('modal_backdrop').style.display = 'none';                               
+                pageEl.setAttribute('aria-hidden', 'false');
+                modalEl.setAttribute('class','slds-modal');             
+            };   
+            function openModal() {
+                var modalEl = document.getElementById('fa_edit_modal');
+                var pageEl = document.getElementById('page_wrapper');  
+                modalEl.setAttribute('class','slds-modal slds-fade-in-open');   
+                document.getElementById('modal_backdrop').style.display = 'inline';             
+                pageEl.setAttribute('aria-hidden', 'true');
+            }; 
+            function closeAssetModal() {
+                var modalEl = document.getElementById('asset_edit_modal');
+                var pageEl = document.getElementById('page_wrapper');   
+                document.getElementById('asset_modal_backdrop').style.display = 'none';                             
+                pageEl.setAttribute('aria-hidden', 'false');
+                modalEl.setAttribute('class','slds-modal');             
+            };   
+            function openAssetModal() {
+                var modalEl = document.getElementById('asset_edit_modal');
+                var pageEl = document.getElementById('page_wrapper');  
+                modalEl.setAttribute('class','slds-modal slds-fade-in-open');   
+                document.getElementById('asset_modal_backdrop').style.display = 'inline';               
+                pageEl.setAttribute('aria-hidden', 'true');
+            }; 
+            function closeInsModal() {
+                var modalEl = document.getElementById('ins_edit_modal');
+                var pageEl = document.getElementById('page_wrapper');   
+                document.getElementById('ins_modal_backdrop').style.display = 'none';                               
+                pageEl.setAttribute('aria-hidden', 'false');
+                modalEl.setAttribute('class','slds-modal');             
+            };   
+            function openInsModal() {
+                var modalEl = document.getElementById('ins_edit_modal');
+                var pageEl = document.getElementById('page_wrapper');  
+                modalEl.setAttribute('class','slds-modal slds-fade-in-open');   
+                document.getElementById('ins_modal_backdrop').style.display = 'inline';             
+                pageEl.setAttribute('aria-hidden', 'true');
+            };               
+            closeModal();           
+            closeAssetModal();          
+            closeInsModal();            
+        </script>
+    </body>
+</apex:page>

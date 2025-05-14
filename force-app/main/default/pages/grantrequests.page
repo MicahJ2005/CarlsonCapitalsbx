@@ -1,0 +1,59 @@
+<apex:page tabStyle="ACPGrantRequests__tab" standardController="Account" extensions="NewGrantRequestController2" sidebar="false">
+    <apex:form >
+        <!-- <apex:commandButton value="New Contact" action="{!redirectToNewContact}" rerender="redirectPanel" /> -->
+        <apex:outputPanel id="redirectPanel" >
+            <apex:outputPanel rendered="{!isRedirect}">
+                <!--redirect using javascript-->
+                <script type="text/javascript">
+                window.top.location.href = '{!redirectUrl}';
+                </script>
+            </apex:outputPanel>
+        </apex:outputPanel>
+    </apex:form>    
+<!-- <head>
+        <style>
+            body .bPageBlock, body .pbHeader, body .pbBody, body .secondaryPalette.bPageBlock {
+                background-color: white !important; }       
+                      
+        </style>
+    </head>
+    <body>
+        <apex:sectionHeader title="ACP Grant Requests" ></apex:sectionHeader>
+        <apex:pageMessage strength="1" summary="A reminder for tax purposes: please remember that since your initial contributions to your donor advised fund are tax-deductible, your subsequent nominations to charitable organizations are not." severity="info"></apex:pageMessage>            
+        <p> </p>
+        <apex:outputLink value="{!$Page.newgrantrequest}" styleClass="pbBody"><apex:image id="newGrantRequest" url="{!URLFOR($Resource.NewGrantRequestButton)}" /></apex:outputLink>
+        <p> </p>
+        <apex:pageBlock id="Block1">
+            <apex:pageBlockSection showHeader="true" title="ACP Account Information" collapsible="false" columns="1">                                
+                <apex:form >                
+                <apex:pageBlockTable value="{!acpFAs}" var="fa" id="fas" >                                                                                                       
+                    <apex:column value="{!fa.Portal_Display_Name__c}" headerValue="Display Name and Account Number"></apex:column>                                                                                
+                    <apex:column value="{!fa.FinServ__Balance__c}" headerValue="Available Balance"></apex:column>
+                    
+                </apex:pageBlockTable>                                
+                </apex:form>                                
+            </apex:pageBlockSection>
+        </apex:pageBlock>        
+        <apex:pageBlock id="Block2">
+            <apex:pageBlockSection showHeader="true" title="ACP Grant Requests" collapsible="false" columns="1">                                                
+                <apex:form >                
+                <apex:pageBlockTable value="{!acpGrants}" var="gr" id="grants" >                    
+                     <apex:column width="60px" headerValue="Action">                         
+                         <apex:outputLink value="/apex/newgrantrequest?cloneid={!gr.id}" id="cloneLink">Clone</apex:outputLink>
+                     </apex:column> 
+                     <apex:column headerValue="Date">
+                         <apex:outputText value="{0,date,MM/dd/yyyy}" ><apex:param value="{!gr.FSTR__Due_Date__c}" /> </apex:outputText>
+                     </apex:column>
+                     <apex:column headerValue="Organization (Click for Details & Documents)">                         
+                         <apex:outputLink value="/apex/grantrequest?id={!gr.id}">{!gr.Charitable_Organization__r.Name}</apex:outputLink>
+                     </apex:column>                                         
+                    <apex:column value="{!gr.Proposed_Grant_Amount__c}" headerValue="Amount"></apex:column>                                                                                
+                    <apex:column value="{!gr.FSTR__Status__c}" headerValue="Status"></apex:column>                    
+                </apex:pageBlockTable>                
+                <p><apex:commandLink value="Show All" action="{!showAll}" reRender="grants,Block2" rendered="{!NOT(showAll)&&grantCount>=10}"/></p>
+                <p><apex:commandLink value="Show 10" reRender="grants,Block2" onclick="window.location.reload();" rendered="{!showAll}" /></p>
+                </apex:form>                
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </body> -->
+</apex:page>

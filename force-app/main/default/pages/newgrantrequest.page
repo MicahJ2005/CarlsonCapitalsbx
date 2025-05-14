@@ -1,0 +1,150 @@
+<apex:page tabStyle="ACPGrantRequests__tab" controller="NewGrantRequestController" sidebar="false" standardStylesheets="false" doctype="html-5.0"> 
+    <head>
+        <style type="text/css">
+            body .bPageBlock, body .pbHeader, body .pbBody, body  .secondaryPalette.bPageBlock {
+                background-color: white !important; }  
+        </style>
+    </head>
+    <body>
+    <apex:sectionHeader title="New ACP Grant Request" ></apex:sectionHeader>
+    <apex:pageMessage strength="1" summary="A reminder for tax purposes: please remember that since your initial contributions to your donor advised fund are tax-deductible, your subsequent nominations to charitable organizations are not." severity="info"></apex:pageMessage>
+    <apex:pageMessage rendered="{!AND(MONTH(TODAY())=12, DAY(TODAY())<15)}" strength="1" summary="The deadline for submitting grant requests in December 15." severity="error"></apex:pageMessage>
+    <apex:pageMessage rendered="{!AND(MONTH(TODAY())=12, DAY(TODAY())>=15)}" strength="1" summary="The {!YEAR(TODAY())} deadline for grant processing has passed. At this point we are unable to fully process grant nominations within the remainder of the calendar year. Thank you for your participation as an American Center for Philanthropy donor. We look forward to working with you to fulfill your charitable purposes in {!YEAR(TODAY())+1}!" severity="error"></apex:pageMessage>
+    <p> </p>
+    <apex:form id="grantRequest">
+        <apex:pageBlock id="mainBlock" rendered="{!NOT(submitted)}">
+            <apex:pageMessages />
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton action="{!SaveRecord}" value="Submit" />                 
+                <apex:commandButton action="{!saveAndNew}" value="Submit & Create New ACP Grant Request" />
+                <apex:commandButton action="{!Cancel}" value="Cancel" immediate="true" />
+            </apex:pageBlockButtons>            
+            <apex:pageBlockSection collapsible="false" showHeader="true" title="New ACP Grant Request" columns="1">                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel for="acpFunds" value="ACP Charitable Gift Fund" ></apex:outputLabel>                
+                    <apex:outputpanel layout="block" styleClass="requiredInput">
+                        <div class="requiredBlock"></div>
+                        <apex:selectList id="acpFunds" required="true" value="{!thisBP.From_Account__c}" size="1" multiselect="false">
+                            <apex:selectOptions value="{!acpAccounts}"></apex:selectOptions>
+                        </apex:selectList>
+                    </apex:outputpanel>
+                </apex:pageBlockSectionItem>                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value=" "></apex:outputLabel>                 
+                    <apex:pageMessage strength="1" summary="SEARCH for a Charitable Organization Name you’ve donated to in the past." severity="info"></apex:pageMessage>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >                
+                    <apex:outputLabel value="{!$ObjectType.Charitable_Organization__c.fields.Name.Label}*"></apex:outputLabel>
+                    <apex:outputpanel layout="block" styleClass="requiredInput">
+                        <div class="requiredBlock"></div>
+                        <apex:inputField id="charOrgLookup" value="{!thisBP.Charitable_Organization__c}" label=" " required="false">
+                        <apex:actionSupport action="{!CharOrgLookupPopulated}" event="onchange" reRender="grantRequest"/>                            
+                    </apex:inputField>
+                    </apex:outputpanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value=" "></apex:outputLabel>
+                    * Please look up an existing charitable organization in the box above, <b>OR</b> use the fields below to create a new charitable organization.
+                </apex:pageBlockSectionItem>                
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$ObjectType.Charitable_Organization__c.fields.Name.Label}"></apex:outputLabel>
+                        <apex:outputpanel layout="block" styleClass="requiredInput">
+                        <div class="requiredBlock"></div>
+                        <apex:inputText value="{!charOrg.Name}" disabled="{!charOrgLookupFilled}" required="false"></apex:inputText>                    
+                        </apex:outputpanel>
+                    </apex:pageBlockSectionItem>                    
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$ObjectType.Charitable_Organization__c.fields.Address_Line_1__c.Label}"></apex:outputLabel>
+                        <apex:outputpanel layout="block" styleClass="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <apex:inputField value="{!charOrg.Address_Line_1__c}" required="false"></apex:inputField>
+                        </apex:outputpanel>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$ObjectType.Charitable_Organization__c.fields.Address_Line_2__c.Label}"></apex:outputLabel>
+                        <apex:inputField value="{!charOrg.Address_Line_2__c}" required="false"></apex:inputField>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$ObjectType.Charitable_Organization__c.fields.City__c.Label}"></apex:outputLabel>
+                        <apex:outputpanel layout="block" styleClass="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <apex:inputField value="{!charOrg.City__c}" required="false"></apex:inputField>
+                        </apex:outputpanel>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$ObjectType.Charitable_Organization__c.fields.State__c.Label}"></apex:outputLabel>
+                        <apex:outputpanel layout="block" styleClass="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <apex:inputField value="{!charOrg.State__c}" required="false"></apex:inputField>
+                        </apex:outputpanel>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$ObjectType.Charitable_Organization__c.fields.Zip_Code__c.Label}"></apex:outputLabel>
+                        <apex:outputpanel layout="block" styleClass="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <apex:inputField value="{!charOrg.Zip_Code__c}" required="false"></apex:inputField>   
+                        </apex:outputpanel>
+                    </apex:pageBlockSectionItem> 
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value=" "></apex:outputLabel>
+                        <apex:pageMessage strength="1" summary="The mailing address can NOT be your home address as checks must be mailed directly to the charity." severity="warning"></apex:pageMessage>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$ObjectType.Charitable_Organization__c.fields.Tax_ID__c.Label}"></apex:outputLabel>
+                        <apex:inputField value="{!charOrg.Tax_ID__c}" required="false"></apex:inputField>                     
+                    </apex:pageBlockSectionItem>
+                 <apex:pageBlockSectionItem >
+                     <apex:outputLabel value=" "></apex:outputLabel>
+                   <apex:pageMessage strength="1" summary="Example : 12-3456789. Please check www.guidestar.org or contact the charity with questions about the Tax ID #." severity="info"></apex:pageMessage>
+                        
+                    </apex:pageBlockSectionItem>                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.FSTR__Business_Process__c.fields.Special_Project_Name__c.Label} *(if applicable)"></apex:outputLabel>
+                    <apex:inputField value="{!thisBP.Special_Project_Name__c}" label=" "></apex:inputField>                    
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value=" "></apex:outputLabel>
+                    * Please indicate restrictions on the use of designated grant funds, if any.<br/><em>Responsibility to comply with such restrictions rests with the recipient organization.</em>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$ObjectType.FSTR__Business_Process__c.fields.Proposed_Grant_Amount__c.Label}"></apex:outputLabel>
+                    <apex:outputpanel layout="block" styleClass="requiredInput">
+                        <div class="requiredBlock"></div>
+                        <apex:inputField value="{!thisBP.Proposed_Grant_Amount__c}" label=" " required="false"></apex:inputField>  
+                    </apex:outputpanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value=" "></apex:outputLabel>
+                    <em>* Minimum grant amount is $250</em>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Specify {!$ObjectType.FSTR__Business_Process__c.fields.Acknowledgement_Option__c.Label}"></apex:outputLabel>
+                    <apex:outputpanel layout="block" styleClass="requiredInput">
+                        <div class="requiredBlock"></div>
+                        <apex:inputField value="{!thisBP.Acknowledgement_Option__c}" label=" " required="false"></apex:inputField>
+                    </apex:outputpanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:inputField value="{!thisBP.Grant_Certification__c}" label=" " ></apex:inputField>
+                    <apex:outputText value="     I hereby certify that if this grant is distributed, it will not fulfill a pre-existing pledge to the recommended charity, and neither I nor any other individual will receive any goods, services or other private benefit from the charitable organization. I understand that this grant nomination will be subject to all the terms and conditions that apply to the account in accordance with my account application."></apex:outputText>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>            
+        </apex:pageBlock>
+        <apex:pageBlock rendered="{!submitted}" >
+            <apex:pageBlockSection showHeader="false">
+                <apex:pageMessage summary="Thank you for submitting a new grant request. The status of this grant can be found here on the portal, a duplicate letter will not be mailed to you." severity="confirm" strength="1" />                
+            </apex:pageBlockSection> <apex:outputLink value="{!$Page.grantrequests}" styleClass="pbBody">Click here to go back to your grant requests.</apex:outputLink>
+        </apex:pageBlock>        
+    </apex:form>
+    <apex:pageBlock rendered="{!NOT(submitted)}" >    
+        <h2>GRANT NOMINATION GUIDELINES</h2>
+        <p>The information below provides a brief over view regarding the guidelines for making grant nominations. Please refer to your Program Guide for complete details.</p><br />
+        <h2>RESTRICTIONS ON GRANTS</h2>
+        <p>Grant recommendations are subject to review and approval by the American Center for Philanthropy. You may recommend grants to U.S. organizations that are tax-exempt public charities<sup>1</sup> or to U.S., state or local governmental organizations qualified to receive tax-deductible charitable contributions, such as state colleges or universities<sup>2</sup>. ACP will not approve recommended grants that: are directed to foreign charitable organizations, fulfill a Donor's pre-existing pledge to a charity; provide private benefit to the Donor or any other individual; support lobbying, political campaigns or other political activities; or are for any other purpose that is not entirely charitable. ACP will take remedial action if it discovers that grants have been made for improper purposes. Remedial actions may include, but are not limited to, a requirement that the recipient charity return the grant.</p><br />
+        <h2>GRANT NOTIFICATION</h2>
+        <p>Grants are made by ACP directly to the recipient organization, through checks bearing the name of ACP. Donors may not serve as intermediaries in the delivery of grants. Donors will receive written confirmation of all grants distributed from the account. Should ACP decide not to approve a recommended grant, ACP will notify the Donor.</p><br />
+        <p><sup>1</sup> As defined in Internal Revenue Code Section 501(c)(3) and Section 509(a)(1), (2) or (3)<br />
+           <sup>2</sup> As defined in Internal Revenue Code Section 170(c)(1)</p>
+    </apex:pageBlock>    
+    </body>
+</apex:page>

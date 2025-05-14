@@ -1,0 +1,4 @@
+<apex:page standardController="Account" showHeader="false" sidebar="false" standardStylesheets="false">
+<p>Right-click on this link and choose Open in new tab:</p>
+<p><a href="{!Account.NetDocs_Link__c}">{!Account.NetDocs_Link__c}</a></p>
+</apex:page>

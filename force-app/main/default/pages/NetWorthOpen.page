@@ -1,0 +1,14 @@
+<!--
+Date: 08/21/2024
+Author: Taylor Nelson
+
+This page is used because the URL buttons cannot open in a new tab. 
+This JavaScript will open the networth page in a new tab and go back to the previous page (The Household) in the current tab.
+-->
+
+<apex:page showHeader="true" sidebar="true" standardController="Account">
+    <script>
+    	window.open("/apex/NetWorth?id={!Account.Id}");
+        window.history.go(-1); 
+    </script>
+</apex:page>

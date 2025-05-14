@@ -1,0 +1,76 @@
+<apex:page standardController="Account" tabStyle="CommunityDocuments__tab" extensions="CommunityDocumentsController" sidebar="false">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css"></link>
+    <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>    
+    <style>
+        body .bPageBlock, body .pbHeader, body .pbBody, body  .secondaryPalette.bPageBlock {
+            background-color: white !important;
+        }       
+        div.ui-widget-overlay {
+            opacity: 0.8;
+        }
+        .no-close .ui-dialog-titlebar-close {
+          display: none;
+        }        
+        .ui-dialog .ui-dialog-titlebar,.ui-dialog .ui-button {
+            background: #E2D0AA;            
+        }
+        .ui-dialog .ui-button {
+            font-weight:bold;
+        }        
+    </style>
+    <apex:pageBlock >
+        <apex:pageBlockSection rendered="{!u.Portal_Upload_Allowed__c}" showHeader="false">
+            <apex:pageBlockSectionItem >Test
+                <apex:outputLink value="/_ui/core/chatter/files/FileTabPage">Upload Documents</apex:outputLink>            
+            </apex:pageBlockSectionItem>                
+        </apex:pageBlockSection>        
+        <apex:pageBlockSection columns="{!columns}">
+            <apex:repeat value="{!orderedDesktopGroups}" var="groupname">
+                <apex:pageBlock rendered="{!groupname!='placeholder'}" title="{!groupname}">
+                    <c:DocumentList docs="{!docsByType[groupname]}" viewall="true" groupid="{!docGroupsByName[groupname]}" groupname="{!groupname}"></c:DocumentList>                              
+                </apex:pageBlock>
+                <apex:outputtext rendered="{!groupname='placeholder'}" />           
+            </apex:repeat>            
+        </apex:pageBlockSection>            
+    </apex:pageBlock>
+    <!-- modal for terms of use -->
+    <p id="signTerms" style="visibility:hidden;">{!signTerms}</p>        
+    <apex:outputPanel rendered="{!signTerms}">
+        <div id="terms_conditions" title="Client Portal Terms of Use" >
+            <div class="content">
+                <p>
+                    <apex:include id="terms_agreement" pageName="Terms" rendered="{!signTerms}"/>
+                </p>  
+            </div>   
+        </div>    
+    </apex:outputPanel>
+    <apex:form >    
+        <apex:actionFunction action="{!agreeSubmit}" name="agreeSubmit"></apex:actionFunction>
+    </apex:form>
+    <script type="text/javascript">    
+
+          $(function() {
+            console.log(document.getElementById("signTerms").innerHTML);
+            if (document.getElementById("signTerms").innerHTML==='true') {
+                $( "#terms_conditions" ).dialog({
+                  dialogClass: "no-close",
+                  modal: true,
+                  width:700,
+                  height:500,
+                  draggable: false,
+                  resizable: false,
+                  close: function() {
+                    $( "#terms_conditions" ).dialog( "open" );
+                  },
+                  buttons: [{
+                    text:"I Agree",
+                    click: function() {
+                      agreeSubmit();
+                    }
+                  }]                  
+                }).scrollTop(0);
+            }
+          });
+    </script>         
+</apex:page>

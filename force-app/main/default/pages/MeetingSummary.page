@@ -1,0 +1,356 @@
+<apex:page title="Meeting Summary" sidebar="false" showHeader="false" standardController="Account" extensions="MeetingSummaryController" id="myPage" action="{!actionMethods}">   
+    
+    <style>
+        .sectionHeader
+        {
+            background-color: #5E663A; <!--CCM Green-->
+            color: white; <!--Text color-->
+            height: 30px;
+            font-size: 130%;
+        }
+        .sectionHeader2
+        {
+            background-color: #A37F14; <!--CCM Brown-->
+            color: white; <!--Text color-->
+            height: 30px;
+            font-size: 130%;
+        }
+        .sectionList
+        {
+            margin-left: 20px;
+        }
+        .comboboxIcon
+        {
+            height: 0px;
+            width: 0px;
+        }
+        body
+        {
+            font-family: 'Bembo','Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif;
+            font-size: 12px;
+            font-style: normal;
+            <!--margin-right:20px;
+            margin:0;
+            padding:0;-->
+        }
+        table
+        {
+            border-collapse:collapse; <!--Removes small spacing between table cells-->
+        }
+        input
+        {
+            font-family: 'Bembo','Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif;
+            font-size: 14px;
+            font-style: normal;
+        }
+        select
+        {
+            font-family: 'Bembo','Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif;
+            font-size: 14px;
+            font-style: normal;
+        }
+        textarea
+        {
+            font-family: 'Bembo','Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif;
+            font-size: 14px;
+            font-style: normal;
+        }
+    </style>
+    
+    <div>
+        <apex:pageMessages id="errorMsgs"/>
+        <!--<apex:messages id="errorMsgs2"/>-->
+        <apex:form id="myForm" rendered="{!(!pageErrors)}">
+            <apex:actionRegion >
+                <apex:commandButton style="float:right;" value="Reset Notes to Default" rerender="NoteRepeater" onclick="confirmReset();"/>
+                <p style="text-align: center;"><apex:image value="{!URLFOR($Resource.Investment_Snapshot_Logo)}" width="217" height="60" style="margin:0 auto;"/></p>
+                <div align = "Center">
+                    <h1 style="font-size: 220%; font-variant: small-caps; font-family: 'Bembo','Trebuchet MS', 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', Tahoma, sans-serif;">
+                        Regular Progress Meeting Agenda for {!household.Name}
+                    </h1>
+                    <div></div>
+                    <span class="dateInput dateOnlyInput">
+                        <input class = "datepicker" style = "width:200px; text-align:center; text-size:20;" id = "meetingDate" name = "meetingDate" onfocus="DatePicker.pickDate(true, 'meetingDate', false)" type="text" value = "{!dateVal}" onchange="setDateVal(this.value);"/>
+                    </span>
+                </div>
+                <apex:actionFunction action="{!setDateVal}" name="setDateVal" reRender="emptydiv">
+                    <apex:param name="myDateVal" value="" assignTo="{!dateVal}"></apex:param>
+                </apex:actionFunction>
+                <div id="emptydiv"></div>
+                <div style="margin-top:10px;"></div>
+                <apex:pageblock id="pb" mode="maindetail">
+                     <!-- Task section goes here -->
+                    <div style="margin-top:10px;"></div>
+                    <apex:pageBlock id="NoteRepeater" mode="maindetail">
+                        <apex:commandbutton value="Add Section" action="{!AddNoteSection}" rerender="pb" onComplete="onReRender();">
+                        </apex:commandbutton>
+                        <apex:inputHidden value="{!draggedSection}" id="hiddenDrag"/>
+                        <apex:inputHidden value="{!enterSection}" id="hiddenEnter"/>
+                        <apex:inputHidden value="{!tabSection}" id="hiddenTab"/>
+                        <apex:inputHidden value="{!droppedSection}" id="hiddenDrop"/>
+                        <apex:repeat value="{!lstCount}" var="key3">
+                            <apex:repeat value="{!lstNotes[key3]}" var="value3">
+                                <table width="100%" id="noteTable">
+                                    <tr class="sectionHeader2">
+                                        <th>
+                                            <apex:commandbutton value="+" action="{!AddNote}" rerender="pb" onComplete="onReRender();">
+                                                <apex:param name="rowToBeAdded" value="{!key3}" assignTo="{!selectedNoteIndex}"></apex:param>
+                                            </apex:commandbutton>
+                                        </th>
+                                        <th style="font-size:150%" id="{!key3}thDrag">
+                                            <input type="radio" checked="true" id="{!key3}thDrag" draggable="true" display="inline-block"/>
+                                            <apex:outputText value="{!lstNotes[key3].keyContent}" rendered="{!(lstNotes[key3].keyContent == 'Team Requests' || lstNotes[key3].keyContent == 'Basics')}" style="font-size:100%; background-color: #A37F14; color:white;"/>
+                                            <apex:inputText value="{!lstNotes[key3].keyContent}" rendered="{!(lstNotes[key3].keyContent != 'Team Requests' && lstNotes[key3].keyContent != 'Basics')}" style="font-size:100%; background-color: #A37F14; color:white; width:400px; border:solid 1px #cca019;"/>
+                                        </th>
+                                        <th style="width: 10%; text-align:center">
+                                            MindMap Section
+                                        </th>
+                                        <th style="width: 10%; text-align:center">
+                                            Client Task
+                                        </th>
+                                        <th style="width: 10%; text-align:center">
+                                            Task to Note
+                                        </th>
+                                    </tr>
+                                    <apex:repeat value="{!value3.parsedNotesCount}" var="c1">
+                                        <tr>
+                                            <td style="width:50px"> 
+                                                <apex:commandButton value="<<" action="{!UndentNote}" rerender="pb" onComplete="onReRender();"> <!--onclick="if(!indentChecker2()){return false};"-->
+                                                    <apex:param name="rowToBeUndented" value="{!c1}" assignTo="{!selectedRowIndex}"></apex:param>
+                                                    <apex:param name="noteToBeUndented" value="{!key3}" assignTo="{!selectedNoteIndex}"></apex:param>
+                                                </apex:commandButton>
+                                                <apex:commandButton value=">>" action="{!IndentNote}" rerender="pb" onComplete="onReRender();">
+                                                    <apex:param name="rowToBeIndented" value="{!c1}" assignTo="{!selectedRowIndex}"></apex:param>
+                                                    <apex:param name="noteToBeIndented" value="{!key3}" assignTo="{!selectedNoteIndex}"></apex:param>
+                                                </apex:commandButton>
+                                            </td>
+                                            <td id="{!key3}tdDrag{!c1}" style="position:relative;">
+                                                <apex:outputPanel ><input type="radio" checked="true" id="{!key3}tdDrag{!c1}" draggable="true" style="position:absolute; top: 50%; transform: translate(0, -50%);"/>
+                                                    <apex:actionSupport event="ondblclick" action="{!DoubleClickNote}" rerender="pb" onComplete="onReRender();">
+                                                        <apex:param name="rowToBeIndented" value="{!c1}" assignTo="{!selectedRowIndex}"></apex:param>
+                                                        <apex:param name="noteToBeIndented" value="{!key3}" assignTo="{!selectedNoteIndex}"></apex:param>
+                                                    </apex:actionSupport>
+                                                </apex:outputPanel>
+                                                <apex:inputTextarea id="NoteInput" value="{!value3.parsedNotes[c1]}" onkeydown="return handlerKeyDown(event);" style="min-width:350px; min-height:32px; margin-left: {!(value3.paddingAmount[c1] + 'px')};"></apex:inputTextarea>
+                                            </td>
+                                            <td style="text-align:center">
+                                                <apex:selectList value="{!value3.mindMapSection}" multiselect="false" size="1">
+                                                    <apex:selectOptions value="{!MindMap}"/>
+                                                </apex:selectList>
+                                            </td>
+                                            <!--<td style="text-align:center">
+                                                <apex:selectList value="{!value3.noteClassification}" multiselect="false" size="1">
+                                                    <apex:selectOptions value="{!classification}"/>
+                                                </apex:selectList>
+                                            </td>-->
+                                            <td style="text-align:center">
+                                                <apex:inputCheckbox value="{!value3.assignedToClient[c1]}"/>
+                                            </td>
+                                            <td style="text-align:center">
+                                                <apex:selectList value="{!value3.taskLocation[c1]}" multiselect="false" size="1">
+                                                    <apex:selectOptions value="{!TaskNumbers}"/>
+                                                </apex:selectList>
+                                            </td>
+                                        </tr>
+                                    </apex:repeat>
+                                </table>
+                            </apex:repeat>
+                        </apex:repeat>
+                    </apex:pageBlock>
+                    <div align="Center">
+                        <apex:actionFunction name="doSave" action="{!save}"/>
+                        <apex:actionFunction name="doPage" action="{!page}"/>
+                        <apex:actionFunction name="doRedirect" action="{!redirect}"/>
+                        <apex:actionFunction name="doReset" action="{!resetNotes}"/>
+                        <apex:actionFunction name="doTab" action="{!TabIndentNote}" rerender="pb" onComplete="onReRender();"/>
+                        <apex:actionFunction name="doEnter" action="{!EnterAddNote}" rerender="pb" onComplete="onReRender();"/>
+                        <apex:actionFunction name="moveNote" action="{!MoveNote}" rerender="pb" onComplete="onReRender();"/>
+                        <apex:commandButton value="Save Notes" onclick="doSave()" rerender="NoteRepeater"/>
+                        <apex:actionPoller action="{!save}" rerender="NoteRepeater" interval="300"/>
+                        <apex:inputHidden value="{!portalSave}" id="hiddenPortalVal"/>
+                        <apex:inputHidden value="{!wordSave}" id="hiddenWordVal"/>
+                        <apex:commandButton rendered="{!(alreadySaved > 0)}" value="Create tasks and PDF" action="{!page}"/>
+                        <apex:commandButton rendered="{!(alreadySaved > 0)}" value="Create tasks and Word Doc" onclick="confirmWordPortal()" rerender="none" oncomplete="redirect()"/>
+                        <br/><br/>
+                        <apex:inputCheckbox value="{!saveToNetDocs}" title="Save to NetDocuments" rendered="{!(authRequired == false && alreadySaved == 1)}"/><apex:outputText value="Save to NetDocuments" rendered="{!(authRequired==false && alreadySaved == 1)}"/>
+                        <apex:outputLink rendered="{!(authRequired == true && alreadySaved == 1)}" target="_blank" value="/apex/NetDocumentsAuth?householdId={!householdId}">Authenticate with NetDocuments</apex:outputLink>
+                        <br/><br/>
+                        <!--<apex:inputCheckbox value="{!portalSave}" title="Save to Client Portal" rendered="{!household.Portal_Status__c == 'Opt-In' && alreadySaved == 1}"/><apex:outputText value="Save to Client Portal" rendered="{!household.Portal_Status__c == 'Opt-In' && alreadySaved == 1}"/>-->
+                    </div>
+                </apex:pageblock>
+            </apex:actionRegion>
+        </apex:form>
+    </div>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"/>
+    
+    <script type="text/javascript">
+        function formAlert(){
+            if ("{!renderCharit}" == True){
+                window.alert("Please remember to have the client sign charitable contribution forms before they leave!");
+            }
+        }
+    
+        function handlerKeyDown(ev) {
+            //keycode 13 is enter and 9 is tab.
+            if (event.keyCode == 13) {
+                jQuery('[id$=hiddenDrag]').val(event.target.parentNode.id);
+                jQuery('[id$=hiddenEnter]').val(event.target.parentNode.id);
+                jQuery('[id$=hiddenTab]').val('');
+                doEnter();
+                return false; //rerender - when true, it causes a temporary carriage return before creating a new note
+            } else if(event.keyCode == 9){
+                event.preventDefault(); //stops from tabbing to next section
+                jQuery('[id$=hiddenDrag]').val(event.target.parentNode.id);
+                jQuery('[id$=hiddenEnter]').val('');
+                jQuery('[id$=hiddenTab]').val(event.target.parentNode.id);
+                doTab();
+                document.getElementById(event.target.id).style.marginLeft = parseInt(document.getElementById(event.target.id).style.marginLeft) + 28 + 'px';
+                return true; //no render (but currently rerendering above anyways)
+            } else {
+                return true;
+            }
+        }
+
+        document.addEventListener("dragstart", function(event) {
+            //document.getElementById(event.target.id).innerHTML = "DRAG STARTED!!!!!!!!!!!!!!!!!!";
+            jQuery('[id$=hiddenDrag]').val(event.target.id);
+            //setMove();
+        });
+
+        document.addEventListener("dragenter", function(event) {
+            event.preventDefault();
+        });
+
+        document.addEventListener("dragover", function(event) {
+            event.preventDefault();
+        });
+    
+    //document.addEventListener("click", function(event) {
+    //     window.alert(event.target.id);
+    // });
+
+        document.addEventListener("drop", function(event) {
+            var textId = event.target.id;
+            if (textId.includes('Drag')){
+                jQuery('[id$=hiddenDrop]').val(textId);
+            } else {
+                jQuery('[id$=hiddenDrop]').val(event.target.parentNode.id);
+            }
+            //var compId = document.getElementById('myPage:myForm:pb:NoteRepeater:hiddenDrop').value.toString;
+            if ((document.getElementById('myPage:myForm:pb:NoteRepeater:hiddenDrop').value.includes('Drag') == true) && (document.getElementById('myPage:myForm:pb:NoteRepeater:hiddenDrop').value != document.getElementById('myPage:myForm:pb:NoteRepeater:hiddenDrag').value)){
+                moveNote();
+            }
+        });
+
+    </script>
+    
+    <script>
+    $(document).ready(function(){
+        $ = jQuery.noConflict();
+        $("[id$=mlktp]").hide();
+        $("textarea").each(function () {
+            this.style.height = (this.scrollHeight-4)+'px';
+        });
+        //$.DatePicker.formatDate('MMMM d, yyyy');
+    });
+    
+    $('textarea').each(function () {
+        this.setAttribute('style', this.getAttribute('style') + /*';height:' + (this.scrollHeight) + 'px;*/'overflow-y:hidden;');
+    }).on('input', function () {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+    
+    function confirmPortal() {
+        var answer = confirm('Would you like to save the PDF to the client portal?');
+        jQuery('[id$=hiddenPortalVal]').val(answer);
+        doPage();
+    }
+    
+    function confirmWordPortal() {
+        //var answer = confirm('Would you like to save the PDF to the client portal?');
+        //jQuery('[id$=hiddenPortalVal]').val(answer);
+        jQuery('[id$=hiddenWordVal]').val('word');
+        doPage();
+    }
+    
+    function redirect() {
+        setTimeout(function(){
+            doRedirect();
+        }, 1500);
+    }
+    
+    function doWord(){
+        jQuery('[id$=hiddenWordVal]').val('word');
+        doPage();
+    }
+    
+    function confirmReset() {
+        if(!confirm('Are you sure you want to get rid of all updates and reset the notes to the default template?')){
+            return false;
+        }
+        doReset();
+    }
+    </script>
+    
+    <script>
+    function onReRender(){
+        $(document).ready(function(){
+            $ = jQuery.noConflict();
+            $("[id$=mlktp]").hide(); //hides user type dropdown for assign to fields
+            $("textarea").each(function () {
+                this.style.height = (this.scrollHeight-4)+'px'; //sets the default height of the textareas to be the current text size
+            });
+            var startNote = document.getElementById('myPage:myForm:pb:NoteRepeater:hiddenEnter').value;
+            if (startNote == ''){
+                startNote = document.getElementById('myPage:myForm:pb:NoteRepeater:hiddenTab').value;
+                if (startNote == ''){
+                    
+                } else {                                                     
+                    document.getElementById(startNote).children[1].focus();
+                }
+            } else {
+                var clickedCell = parseInt(startNote.substring((startNote.indexOf('g') + 1), startNote.length));
+                var focusNote = startNote.substring(0, (startNote.indexOf('g') + 1)) + (clickedCell + 1);                                                          
+                document.getElementById(focusNote).children[1].focus();
+            }
+            //$.datepicker.formatDate('mm/dd/yyyy');
+        });
+        
+        $('textarea').each(function () {
+            this.setAttribute('style', this.getAttribute('style') + /*';height:' + (this.scrollHeight) + 'px;*/'overflow-y:hidden;');
+        }).on('input', function () {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+        
+        function confirmWordPortal() {
+            //var answer = confirm('Would you like to save the PDF to the client portal?');
+            //jQuery('[id$=hiddenPortalVal]').val(answer);
+            jQuery('[id$=hiddenWordVal]').val('word');
+            doPage();
+        }
+        
+        function redirect() {
+            setTimeout(function(){
+                doRedirect();
+            }, 1500);
+        }
+        
+        function confirmPortal() {
+            var answer = confirm('Would you like to save the PDF to the client portal?');
+            jQuery('[id$=hiddenPortalVal]').val(answer);
+            doPage();
+        }
+        
+        function doWord(){
+            jQuery('[id$=hiddenWordVal]').val('word');
+            doPage();
+        }
+        
+    }
+    
+    </script>
+         
+</apex:page>

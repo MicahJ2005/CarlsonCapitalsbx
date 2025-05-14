@@ -1,0 +1,63 @@
+@page {
+	size: landscape;
+	margin: 6.35mm;
+	zoom: 1; -moz-transform: scale(1); -moz-transform-origin: 0 0
+}
+.pbHeader {
+	font-size: 13px;
+	background-color: #fff !important;
+}
+.bPageBlock {
+	background-color: #fff !important;
+	border-bottom: none !important;
+	border-left: none !important;
+	border-right: none !important;
+}
+.bPageBlock .pbTitle {
+	width: 100%;
+}
+.bPageBlock .dataCol {
+	padding-left: 0;
+}
+table.fa_table {
+	width: 100%;
+	padding: 0 10px;
+}
+table.reb_table  {
+	page-break-inside: avoid;
+	width: 100%;
+    padding: 0 10px;
+}
+table.fa_table th,
+table.reb_table th {
+	padding: 4px 10px;
+	border-bottom: 1px solid #ccc !important;
+}
+table.fa_table th.right,
+table.reb_table th.right {
+	text-align: right;
+}
+table.fa_table th.center,
+table.reb_table th.center {
+	text-align: center;
+}
+table.fa_table td,
+table.reb_table td {
+	border-bottom: 1px solid #ccc !important;
+	padding: 4px 10px;
+}
+table.reb_table td {
+	/*height: 50px;*/
+}
+table.fa_table td.col4,
+table.fa_table td.col5{
+	text-align: right;
+}
+table.left {
+	width: 48%;
+	float: left;
+}
+table.right {
+	width: 48%;
+	float: right;
+}

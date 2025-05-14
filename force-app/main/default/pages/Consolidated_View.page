@@ -1,0 +1,233 @@
+<apex:page title="Consolidated Household Information" standardController="Account" sidebar="false" showHeader="false" readOnly="false" applyHtmlTag="false" renderAs="pdf">
+<html>
+<head>
+<title>{!account.name} Consolidated</title>
+<style type="text/css">
+  body, .bPageBlock { background: #ffffff !important; border: none !important; font-size: 14px; }
+  /*.pbHeader>table { border-bottom: none !important; }*/
+  table.tableborder td { border-bottom: 1px solid #ccc !important; }
+  table.addressgrid tr { vertical-align: top; }
+  hr { 
+    height: 1px;
+    color: #ccc;
+    background-color: #ccc;
+    margin: 12px 0 30px 0;
+    margin: 1.2rem 0 3rem 0;
+    border: 0;
+
+  }
+</style>
+</head>
+<body> <!--onload="moveTo(0,0); resizeTo(600,800);"-->
+<apex:pageBlock title="{!account.name}">
+<p>Please let us know if any of the information below should be updated.</p>
+
+<!-- Remeber that there is a duplicate version of the grid farther down that needs to be updated -->
+
+<apex:outputPanel rendered="{!account.Secondary_PA__c != null}">
+    <apex:panelGrid columns="3" id="theGrid" width="100%" rules="all" cellspacing="0" cellpadding="6" styleClass="tableborder">
+    
+        <!-- Header -->
+        <apex:outputText id="Column1Header" />
+        <apex:outputText value="Primary Contact" id="Column2Header" style="font-weight:bold;" />
+        <apex:outputText value="Spouse/Partner" id="Column3Header"  style="font-weight:bold;" />
+        
+        <apex:outputText value="First Name" />
+        <apex:outputText value="{!account.Primary_PA__r.FirstName}" />
+        <apex:outputText value="{!account.Secondary_PA__r.FirstName}" />
+        
+        <apex:outputText value="Middle Name" />
+        <apex:outputText value="{!account.Primary_PA__r.MiddleName}" />
+        <apex:outputText value="{!account.Secondary_PA__r.MiddleName}" />
+        
+        <apex:outputText value="Last Name" />
+        <apex:outputText value="{!account.Primary_PA__r.LastName}" />
+        <apex:outputText value="{!account.Secondary_PA__r.LastName}" />
+        
+        <apex:outputText value="Preferred Name" />
+        <apex:outputText value="{!account.Primary_PA__r.FinServ__PreferredName__pc}" />
+        <apex:outputText value="{!account.Secondary_PA__r.FinServ__PreferredName__pc}" />
+        
+        <apex:outputText value="SSN" />
+        <apex:outputText value="{!account.Primary_PA__r.SSN__pc}" />
+        <apex:outputText value="{!account.Secondary_PA__r.SSN__pc}" />
+        
+        <apex:outputText value="Birthdate" />
+        <apex:outputText value="{0,date,MM'/'dd'/'yyyy}"> <apex:param value="{!account.Primary_PA__r.PersonBirthdate}" /> </apex:outputText>
+        <apex:outputText value="{0,date,MM'/'dd'/'yyyy}"> <apex:param value="{!account.Secondary_PA__r.PersonBirthdate}" /> </apex:outputText>
+        
+        <!--
+        <apex:outputText value="Age" />
+        <apex:outputText value="{0, number, 0}"> <apex:param value="{!account.Primary_PA__r.FinServ__Age__pc}" /> </apex:outputText>
+        <apex:outputText value="{0, number, 0}"> <apex:param value="{!account.Secondary_PA__r.FinServ__Age__pc}" /> </apex:outputText>
+        -->
+        
+        <apex:outputText value="Mobile Phone" />
+        <apex:outputText value="{!account.Primary_PA__r.PersonMobilePhone}" />
+        <apex:outputText value="{!account.Secondary_PA__r.PersonMobilePhone}" />
+        
+        <apex:outputText value="Home Phone" />
+        <apex:outputText value="{!account.Primary_PA__r.PersonHomePhone}" />
+        <apex:outputText value="{!account.Secondary_PA__r.PersonHomePhone}" />
+        
+        <apex:outputText value="Email" />
+        <apex:outputLink value="{!'mailto:'+account.Primary_PA__r.PersonEmail}">{!account.Primary_PA__r.PersonEmail}</apex:outputLink>
+        <apex:outputLink value="{!'mailto:'+account.Secondary_PA__r.PersonEmail}">{!account.Secondary_PA__r.PersonEmail}</apex:outputLink>       
+        
+        <apex:outputText value="Employment Status" />
+        <apex:outputText value="{!account.Primary_PA__r.Employment_Status__pc}" />
+        <apex:outputText value="{!account.Secondary_PA__r.Employment_Status__pc}" />
+        
+        <apex:outputText value="Employer" />
+        <apex:outputText value="{!account.Primary_PA__r.Employer__pc}" />
+        <apex:outputText value="{!account.Secondary_PA__r.Employer__pc}" />
+        
+        <apex:outputText value="Job Title" />
+        <apex:outputText value="{!account.Primary_PA__r.PersonTitle}" />
+        <apex:outputText value="{!account.Secondary_PA__r.PersonTitle}" />
+        
+        <apex:outputText value="Employer Phone" />
+        <apex:outputText value="{!account.Primary_PA__r.Employer_Phone__pc}" />
+        <apex:outputText value="{!account.Secondary_PA__r.Employer_Phone__pc}" />
+        
+        <apex:outputText value="Employer Address" />
+        <apex:outputField value="{!account.Primary_PA__r.Employer_Address_Label__c}" />
+        <apex:outputField value="{!account.Secondary_PA__r.Employer_Address_Label__c}" />
+        
+        <apex:outputText value="Primary Citizenship" />
+        <apex:outputText value="{!account.Primary_PA__r.FinServ__PrimaryCitizenship__pc}" />
+        <apex:outputText value="{!account.Secondary_PA__r.FinServ__PrimaryCitizenship__pc}" />
+        
+        <apex:outputText value="Secondary Citizenship" />
+        <apex:outputText value="{!account.Primary_PA__r.FinServ__SecondaryCitizenship__pc}" />
+        <apex:outputText value="{!account.Secondary_PA__r.FinServ__SecondaryCitizenship__pc}" /> 
+        
+        <apex:outputText value="IAA Date" />
+        <apex:outputText value="{0,date,MM'/'dd'/'yyyy}"> <apex:param value="{!account.IAA_Date__c}" /> </apex:outputText>
+        <apex:outputText value="" />
+
+        <apex:outputText value="IPS Date" />
+        <apex:outputText value="{0,date,MM'/'dd'/'yyyy}"> <apex:param value="{!account.IPS_Review_Date__c}" /> </apex:outputText>
+        <apex:outputText value="" />
+        
+    </apex:panelGrid>
+
+</apex:outputPanel>
+
+<apex:outputPanel rendered="{!account.Secondary_PA__c == null}">
+
+    <apex:panelGrid columns="2" id="theGrid1" width="100%" rules="all" cellspacing="0" cellpadding="5">
+        <apex:outputText value="First Name" />
+        <apex:outputText value="{!account.Primary_PA__r.FirstName}" />
+        
+        <apex:outputText value="Middle Name" />
+        <apex:outputText value="{!account.Primary_PA__r.MiddleName}" />
+        
+        <apex:outputText value="Last Name" />
+        <apex:outputText value="{!account.Primary_PA__r.LastName}" />
+        
+        <apex:outputText value="Preferred Name" />
+        <apex:outputText value="{!account.Primary_PA__r.FinServ__PreferredName__pc}" />
+        
+        <apex:outputText value="SSN" />
+        <apex:outputText value="{!account.Primary_PA__r.SSN__pc}" />
+        
+        <apex:outputText value="Birthdate" />
+        <apex:outputText value="{0,date,MM'/'dd'/'yyyy}"> <apex:param value="{!account.Primary_PA__r.PersonBirthdate}" /> </apex:outputText>
+        
+        <!--
+        <apex:outputText value="Age" />
+        <apex:outputText value="{0, number, 0}"> <apex:param value="{!account.Primary_PA__r.FinServ__Age__pc}" /> </apex:outputText>
+        -->
+        
+        <apex:outputText value="Mobile Phone" />
+        <apex:outputText value="{!account.Primary_PA__r.PersonMobilePhone}" />
+        
+        <apex:outputText value="Home Phone" />
+        <apex:outputText value="{!account.Primary_PA__r.PersonHomePhone}" />
+        
+        <apex:outputText value="Email" />
+        <apex:outputLink value="{!'mailto:'+account.Primary_PA__r.PersonEmail}">{!account.Primary_PA__r.PersonEmail}</apex:outputLink>
+        
+        <apex:outputText value="Employment Status" />
+        <apex:outputText value="{!account.Primary_PA__r.Employment_Status__pc}" />
+        
+        <apex:outputText value="Employer" />
+        <apex:outputText value="{!account.Primary_PA__r.Employer__pc}" />
+        
+        <apex:outputText value="Job Title" />
+        <apex:outputText value="{!account.Primary_PA__r.PersonTitle}" />
+        
+        <apex:outputText value="Employer Phone" />
+        <apex:outputText value="{!account.Primary_PA__r.Employer_Phone__pc}" />
+        
+        <apex:outputText value="Employer Address" />
+        <apex:outputField value="{!account.Primary_PA__r.Employer_Address_Label__c}" />
+        
+        <apex:outputText value="Primary Citizenship" />
+        <apex:outputText value="{!account.Primary_PA__r.FinServ__PrimaryCitizenship__pc}" />
+        
+        <apex:outputText value="Secondary Citizenship" />
+        <apex:outputText value="{!account.Primary_PA__r.FinServ__SecondaryCitizenship__pc}" />
+         
+        <apex:outputText value="IAA Date" />
+        <apex:outputText value="{0,date,MM'/'dd'/'yyyy}"> <apex:param value="{!account.IAA_Date__c}" /> </apex:outputText>
+
+        <apex:outputText value="IPS Date" />
+        <apex:outputText value="{0,date,MM'/'dd'/'yyyy}"> <apex:param value="{!account.IPS_Review_Date__c}" /> </apex:outputText>
+        
+        <apex:outputText value="" />
+        
+    </apex:panelGrid>
+</apex:outputPanel>
+
+<br />
+
+<apex:outputPanel >
+    <apex:panelGrid columns="2" id="theAddressGrid" width="100%" rules="all" cellspacing="5" cellpadding="5" styleClass="addressgrid">
+   
+        <apex:outputText value="Current Address" style="font-weight:bold;" />
+        <apex:outputText value="Seasonal/2nd Address" style="font-weight:bold;" />
+        
+        <apex:outputField value="{!account.Address_Label__c}" />
+        <apex:outputField value="{!account.Secondary_Address_Label__c}" rendered="{!account.ShippingStreet != ""}" />
+        <apex:outputText value=" " rendered="{!account.ShippingStreet = ""}" />
+        
+    </apex:panelGrid>
+</apex:outputPanel>
+
+<!--
+<br />
+
+<apex:outputPanel >
+    <apex:panelGrid columns="3" id="theMgmtFormGrid" width="100%" rules="all" cellspacing="0" cellpadding="6" style="text-align:left !important;">
+   
+        <apex:outputText value="IAA Date" />
+        <apex:outputText value="{0,date,MM'/'dd'/'yyyy}" style="text-align:left !important;"> <apex:param value="{!account.IAA_Date__c}" /> </apex:outputText>
+        <apex:outputText value="" />
+
+        <apex:outputText value="IPS Date" />
+        <apex:outputText value="{0,date,MM'/'dd'/'yyyy}" style="text-align:left !important;"> <apex:param value="{!account.IPS_Review_Date__c}" /> </apex:outputText>
+        <apex:outputText value="" />
+        
+    </apex:panelGrid>
+</apex:outputPanel>
+
+<br />
+<hr />
+<apex:outputPanel >
+    <apex:panelGrid columns="6" id="theVerificationGrid" width="100%" rules="all" cellspacing="5" cellpadding="5">
+        <apex:outputText value="Last Updated: " />
+        <apex:outputField value="{!account.Date_Last_Verified__c}" style="text-align: left !important;" />
+        <apex:outputText value="Initials" />
+        <apex:outputText value="Initials" style="color: #fff; border-bottom: 1px solid #ccc !important;" />
+        <apex:outputText value="Date" />
+        <apex:outputText value="Date of Verification" style="color: #fff; border-bottom: 1px solid #ccc !important;" />
+    </apex:panelGrid>
+</apex:outputPanel>
+-->
+
+</apex:pageBlock>
+</body>
+</html>
+</apex:page>

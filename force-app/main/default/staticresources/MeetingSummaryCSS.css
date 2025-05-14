@@ -1,0 +1,41 @@
+@media print {  
+	@page {
+        size: 8.5in 11in;
+        margin: 15mm;
+        
+        @bottom-center {
+            content: "Page " counter(page) " of " counter(pages);
+        }
+    }
+
+    .sectionHeader2 {
+        <!--background-color: #A37F14; CCM Brown-->
+        <!--color: white; Text color-->
+        height: 30px;
+        font-size: 165%;
+        width: 100%;
+    }
+    
+    body {
+        font-family: 'Bembo';
+        font-size: 14px;
+        font-style: normal;
+    }
+    
+    span {
+        opacity: 0;
+    }
+    
+    h1 {
+        font-size: 200%;
+        <!--font-variant: small-caps; Not available in Bembo-->
+    }
+    table {
+        page-break-after: auto;
+        page-break-inside: avoid;
+    }
+    tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+}

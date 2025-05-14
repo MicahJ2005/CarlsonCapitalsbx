@@ -1,0 +1,6 @@
+<aura:component implements="lightning:availableForFlowActions,force:hasRecordId">
+    
+        <aura:attribute name='url' type='string'/>
+    
+
+</aura:component>

@@ -1,0 +1,23 @@
+<apex:page showHeader="false" sidebar="false" controller="NetDocumentsConnectCtrl" action="{!postDocuments}" id="thePage">
+	<!-- Landing page to kick off batch job for posting to NetDocuments -->
+	<style>
+		div#headerSection {
+			display:block;height:50px;
+		}
+		div#centeredSection {
+			font-size:1.2em;width:50%;height:25%;margin:auto auto auto auto;
+		}
+	</style>	
+	<div id="headerSection"></div>
+	<div id="centeredSection">
+		<apex:pageBlock >
+				<apex:pageBlockSection columns="1">
+					<apex:pageMessages id="msgs" escape="false"/>
+					<!-- Display authentication link if necessary -->
+				</apex:pageBlockSection>
+				<apex:pageBlockSection columns="1">
+					<apex:outputLink value="{!'/apex/NetDocumentsAuth?parentId='+parentId}" target="_blank" rendered="{!authRequired}">Authenticate With NetDocuments</apex:outputLink>
+				</apex:pageBlockSection>
+		</apex:pageBlock>
+	</div>
+</apex:page>

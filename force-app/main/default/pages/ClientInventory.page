@@ -1,0 +1,671 @@
+<apex:page standardController="Client_Inventory__c" extensions="ClientInventoryCtrl" showHeader="true" sidebar="false"  id="thePage" action="{!onPageLoad}">
+    <style>
+        body div.bodyDiv table#bodyTable div#discoveryPage,body .x-btn button, body .btn, body .btnImportant, body .btnDisabled, body .btnCancel, body .menuButton .menuButtonButton, body .menuButton .menuButtonMenu a, body .menuButton .menuButtonMenu input.theOption, h1, h2, h3, h4, h5, h6, p,td.messageCell {
+            font-family: 'Verdana, Geneva, sans-serif';
+        }   
+        body div.bodyDiv table#bodyTable div#discoveryPage,body .menuButton .menuButtonMenu a, body .menuButton .menuButtonMenu input.theOption, h1, h2, h3, h4, h5, h6, p {
+            font-size:1.2em;
+        }   
+        body .x-btn button, body .btn, body .btnImportant, body .btnDisabled, body .btnCancel, body .menuButton .menuButtonButton {
+            font-size:0.9em;
+        }   
+        span.dateFormat {
+            visibility: hidden;
+        }
+        .pbSubheader h3 {
+            color:black;
+        }
+        textarea {
+            width:80%;
+        }
+        p.sectionInstruction {
+            font-size:1.2em;
+        }
+        div.logoHeading {
+            display: block;
+            margin-right:auto;
+            margin-left:auto;
+            width:60%;
+            padding:10px;
+            margin-top:25px;
+            margin-bottom:15px; 
+        }       
+        div#backgroundSection,div#clientInventoryThankYouSection {
+            display: block;
+            margin-right:auto;
+            margin-left:auto;
+            width:60%;
+            padding:10px;
+            /*margin-top:10px;*/
+            margin-bottom:25px;
+            /*background-color:white;*/
+        }
+        h1.ccmSectionHeading {
+            font-size:1.4em;
+            display:block;
+            text-align:center;
+            width:100%;         
+        }       
+        p.addInstructions {
+            padding-bottom:10px;
+            padding-top:10px;
+            font-weight:bold;   
+            font-size: 1.1em;       
+        }
+    </style>    
+    <div id="discoveryPage">
+        <!-- <apex:image value="{!$Resource.Investment_Snapshot_Logo}" style="margin-right:auto;margin-left:auto;"/> -->
+        <br/>
+        <!-- <h1 style="margin-left:15px;font-size: 1.8em;font-weight:normal;" class="pageDescription">Client Inventory</h1> -->
+        <apex:pageMessages id="msgs"/>
+        <apex:form >
+            <!-- <apex:inputHidden value="{!Client_Inventory__c.AutoSaved__c}"/> -->
+            <apex:outputPanel style="text-align:center;" id="lastSaved">
+                <p><strong>{!IF(pageNumber==0,'Intro Page','Page '+text(pageNumber)+' of '+text(totalPages))}</strong>&nbsp;&nbsp;<apex:outputText rendered="{!and(NOT(isReadOnly),pageNumber!=4)}"><i>Last saved {!lastSavedMinutesAgo} minutes ago.</i></apex:outputText></p>
+            </apex:outputPanel>
+            <apex:actionPoller interval="60" action="{!updateLastSaved}" status="actionStatus" reRender="lastSaved" rendered="{!and(NOT(isReadOnly),pageNumber!=4,pageNumber!=5)}"/>
+            <apex:actionPoller interval="300" action="{!autoSave}" status="actionStatus" reRender="lastSaved,msgs" rendered="{!and(NOT(isReadOnly),pageNumber!=4,pageNumber!=5)}"/>
+            <apex:pageBlock >
+                <!-- <apex:pageBlockButtons location="top"> -->
+                <div style="margin-right:auto;margin-left:auto;text-align:center;">
+                    <!-- <apex:commandButton value="Intro" action="{!page0}" title="Introduction" disabled="{!pageNumber==0}"/> -->
+                    <apex:commandButton value="Page 1" action="{!page1}" title="General Information" disabled="{!pageNumber==1}"/>
+                    <apex:commandButton value="Page 2" action="{!page2}" title="Income, Net Worth, Debt" disabled="{!pageNumber==2}"/>
+                    <apex:commandButton value="Page 3" action="{!page3}" title="Advanced Planning & Insurance Information" disabled="{!pageNumber==3}"/>
+                    <apex:commandButton value="Page 4" action="{!page4}" title="Statements and Documents" disabled="{!pageNumber==4}"/>
+                    <apex:commandButton value="Page 5" action="{!page5}" title="Statements and Documents (continued)" disabled="{!pageNumber==5}"/>
+                    <apex:commandButton value="Page 6" action="{!page6}" title="Documents" disabled="{!pageNumber==6}"/>
+                    <apex:commandButton value="Page 7" action="{!page7}" title="Thank You" disabled="{!pageNumber==7}"/>
+                    &nbsp;|&nbsp;
+                    <apex:commandButton value="Save and Continue" action="{!quickSaveItems}" disabled="{!isReadOnly}"/>
+                    <apex:commandButton value="Complete Inventory" onclick="return confirmDelete();" action="{!completeApplication}" disabled="{!isReadOnly}"/>
+                </div>
+                <!-- </apex:pageBlockButtons> -->
+            </apex:pageBlock>
+            <apex:pageBlock rendered="{!pageNumber==0}">
+                <!-- <div class="logoHeading"> -->
+                    <!-- <apex:image value="{!$Resource.Investment_Snapshot_Logo}" style="margin-right:auto;margin-left:auto;"/> -->
+                    <!-- <h1 style="font-size:1.2em;margin-right:auto;margin-left:auto;">Welcome!</h1> -->
+                <!-- </div>      -->
+                <div id="backgroundSection">
+                    <h1 class="ccmSectionHeading">Welcome!</h1>
+                    <p class="sectionInstruction">
+                        Thank you for your interest in Carlson Capital Management. The Inventory Form and Questionnaire, along with the documents you collect and provide with them, are of significant importance as we assess your situation and develop a comprehensive financial plan specifically for you. We have found that the more thorough you can be in providing us with this information, the better job we can do in developing your plan. We appreciate the time you are taking to gather pertinent information and complete the forms. Please contact us should you have questions while completing.
+                    </p>
+                </div>
+            </apex:pageBlock>       
+            <apex:pageBlock title="Page 1: General Information" rendered="{!pageNumber==1}">
+                <apex:pageBlockSection title="Client" collapsible="false" columns="3">
+                    <apex:inputField value="{!Client_Inventory__c.Name}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Middle_Name__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.LastName__c}"/>
+
+                    <apex:inputField value="{!Client_Inventory__c.Birthdate__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Social_Security__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Marital_Status__c}"/>
+
+                    <apex:inputField value="{!Client_Inventory__c.Address__c}"/>
+                    <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+
+                    <apex:inputField value="{!Client_Inventory__c.City__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.State__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Zip__c}"/>
+
+                    <apex:inputField value="{!Client_Inventory__c.Mobile_Phone__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Home_Phone__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Business_Phone__c}"/>
+                    <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+
+                    <apex:inputField value="{!Client_Inventory__c.Preferred_Contact__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Preferred_Email_Address__c}"/>
+                    <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+
+                    <apex:inputField value="{!Client_Inventory__c.Employer__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Position__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Employer_Phone__c}"/>
+
+                    <apex:inputField value="{!Client_Inventory__c.Employer_Address__c}"/>
+                    <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+
+                    <apex:inputField value="{!Client_Inventory__c.Employer_City__c}" />
+                    <apex:inputField value="{!Client_Inventory__c.Employer_State__c}" />
+                    <apex:inputField value="{!Client_Inventory__c.EmployerZip__c}" />               
+                    <!-- <apex:inputField value="{!Client_Inventory__c.Preferred_Contact__c}"/> -->
+                    <!-- <apex:inputField value="{!Client_Inventory__c.Preferred_Contact_MEthod__c}"/> -->
+
+                </apex:pageBlockSection>
+                <!--  Client planning information -->
+                <apex:pageBlockSection title="Co-Client" collapsible="false" columns="3">   
+
+                    <!-- Co-client information -->
+                    <apex:inputField value="{!Client_Inventory__c.Co_Client_Name__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Co_Client_MI__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Co_Client_LastName__c}"/>
+
+                    <apex:inputField value="{!Client_Inventory__c.Co_Client_Birthdate__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Co_Client_Social_Security__c}"/>
+                    <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+
+                    <apex:inputField value="{!Client_Inventory__c.Co_Client_Mobile_Phone__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Co_Client_Home_Phone__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Co_Client_Business_Phone__c}"/>
+                    <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+
+                    <apex:inputField value="{!Client_Inventory__c.Preferred_Contact_MEthod__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Co_Client_Preferred_Email_Address__c}"/>
+                    <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+
+                    <apex:inputField value="{!Client_Inventory__c.Co_Client_Employer__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.CO_Client_Position__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Employer_Phone_Coclient__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Co_Client_Employer_Address__c}"/>
+                    <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                    <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                    <apex:inputField value="{!Client_Inventory__c.Co_client_Employer_City__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.CoClient_EmployerState__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.CoClient_EmployerZip__c}"/>
+                </apex:pageBlockSection>
+            </apex:pageBlock>
+
+            <apex:pageBlock title="Children And Other Dependents" id="childrenSection" rendered="{!pageNumber==1}">
+                <apex:pageBlockButtons location="top">
+                    <apex:commandButton title="Save all currently-entered records" value="Save" action="{!saveDependentItems}" reRender="childrenSection,msgs" disabled="{!isReadOnly}"/>
+                    <apex:commandButton title="Save all currently-entered records and add a new row below" value="Save & Add Dependent" action="{!addDependentItems}" reRender="childrenSection,msgs" disabled="{!isReadOnly}"/>
+                    <!-- <apex:commandButton value="Remove" action="{!removeDependentItems}" reRender="childrenSection,msgs" rendered="{!NOT(isReadOnly)}"/> -->
+                </apex:pageBlockButtons>
+            <p class="addInstructions">Click 'Add Dependent' to list as many as you'd like.</p>                                 
+                <apex:pageBlockTable value="{!dependentItems}" var="i" id="dependent_table" rendered="{!dependentItems.size>0}">
+                    <apex:column headerValue="Full Name">
+                        <apex:inputField value="{!i.item.Name}"/>
+                    </apex:column>
+                    <apex:column headerValue="Birth Date">
+                        <apex:inputField value="{!i.item.Date__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Age">
+                        <apex:inputField value="{!i.item.Age__c}"/>
+                    </apex:column>          
+                    <apex:column headerValue="Social Security #">
+                        <apex:inputField value="{!i.item.Tax_Id__c}" />
+                    </apex:column>
+                    <apex:column headerValue="Marital Status">
+                        <apex:inputField value="{!i.item.Status__c}"/>
+                    </apex:column>  
+                    <apex:column headerValue="Action">
+                        <apex:commandLink action="{!removeGoalItem}" value="Remove" reRender="childrenSection,msgs" rendered="{!NOT(isReadOnly)}">
+                            <apex:param name="itemIdToRemove" assignTo="{!itemId}" value="{!i.item.Id}"/>
+                        </apex:commandLink>
+                    </apex:column>                                                                      
+                </apex:pageBlockTable>
+            </apex:pageBlock>   
+            <apex:pageBlock title="Professional Contacts/Relationships" rendered="{!pageNumber==1}">
+                <apex:pageBlockSection collapsible="false">
+                    <apex:inputField value="{!Client_Inventory__c.Accountant__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Attorney__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Accountant_Phone__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Attorney_Phone__c}"/> 
+                </apex:pageBlockSection>            
+            </apex:pageBlock>   
+
+            <apex:pageBlock title="Page 2: Income, Net Worth, Debt" rendered="{!pageNumber==2}">
+
+            </apex:pageBlock>
+
+            <apex:pageBlock title="Annual Savings" id="savingsSection" rendered="{!pageNumber==2}">
+                <apex:pageBlockButtons location="top">
+                    <apex:commandButton title="Save all currently-entered records" value="Save" action="{!saveSavingsItems}" reRender="savingsSection,msgs" disabled="{!isReadOnly}"/>
+                    <apex:commandButton title="Save all currently-entered records and add a new row below" value="Save & Add Account" action="{!addSavingsItems}" reRender="savingsSection,msgs" disabled="{!isReadOnly}"/>
+                    <!-- <apex:commandButton value="Remove" action="{!removeIncomeItems}" reRender="savingsSection,msgs"/> -->
+                </apex:pageBlockButtons>
+            <p class="addInstructions">Please provide annual amounts for each account type. Click 'Add Account' to list as many as you'd like.</p>                                  
+                <apex:pageBlockTable value="{!savingsItems}" var="i" id="savings_table" rendered="{!savingsItems.size>0}">
+                    <apex:column headerValue="Account Type">
+                        <apex:inputField value="{!i.item.Type__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Annual Client Amount">
+                        <apex:inputField value="{!i.item.Client_Amount__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Annual Co-Client Amount">
+                        <apex:inputField value="{!i.item.Co_Client_Amount__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Action">
+                        <apex:commandLink action="{!removeGoalItem}" value="Remove" reRender="savingsSection,msgs" rendered="{!NOT(isReadOnly)}">
+                            <apex:param name="itemIdToRemove" assignTo="{!itemId}" value="{!i.item.Id}"/>
+                        </apex:commandLink>
+                    </apex:column>              
+                </apex:pageBlockTable>
+            </apex:pageBlock>
+
+            <apex:pageBlock title="Income" id="incomeSection" rendered="{!pageNumber==2}">
+                <apex:pageBlockButtons location="top">
+                    <apex:commandButton title="Save all currently-entered records" value="Save" action="{!saveIncomeItems}" reRender="incomeSection,msgs" disabled="{!isReadOnly}"/>
+                    <apex:commandButton title="Save all currently-entered records and add a new row below" value="Save & Add Income Source" action="{!addIncomeItems}" reRender="incomeSection,msgs" disabled="{!isReadOnly}"/>
+                    <!-- <apex:commandButton value="Remove" action="{!removeIncomeItems}" reRender="incomeSection,msgs"/> -->
+                </apex:pageBlockButtons>
+            <p class="addInstructions">Click 'Add Income' to list as many as you'd like.</p>                                    
+                <apex:pageBlockTable value="{!incomeItems}" var="i" id="income_table" rendered="{!incomeItems.size>0}">
+                    <apex:column headerValue="Income Type">
+                        <apex:inputField value="{!i.item.Type__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Client Amount">
+                        <apex:inputField value="{!i.item.Client_Amount__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Co-Client Amount">
+                        <apex:inputField value="{!i.item.Co_Client_Amount__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Action">
+                        <apex:commandLink action="{!removeGoalItem}" value="Remove" reRender="incomeSection,msgs" rendered="{!NOT(isReadOnly)}">
+                            <apex:param name="itemIdToRemove" assignTo="{!itemId}" value="{!i.item.Id}"/>
+                        </apex:commandLink>
+                    </apex:column>              
+                </apex:pageBlockTable>
+            </apex:pageBlock>           
+
+            <apex:pageBlock title="Net Worth" id="networthSection" rendered="{!pageNumber==2}">
+                <apex:pageBlockButtons location="top">
+                    <apex:commandButton title="Save all currently-entered records" value="Save" action="{!saveNetWorthItems}" reRender="networthSection,msgs" disabled="{!isReadOnly}"/>
+                    <apex:commandButton title="Save all currently-entered records and add a new row below" value="Save & Add" action="{!addNetWorthItems}" reRender="networthSection,msgs" disabled="{!isReadOnly}"/>
+                    <!-- <apex:commandButton value="Remove" action="{!removeNetWorthItems}" reRender="networthSection,msgs"/> -->
+                </apex:pageBlockButtons>
+            <p class="addInstructions">Click 'Add Item' to list as many as you'd like.</p>                                  
+                <apex:pageBlockTable value="{!networthItems}" var="i" id="networth_table" rendered="{!networthItems.size>0}">
+                    <apex:column headerValue="Type">
+                        <apex:inputField value="{!i.item.Type__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Owner">
+                        <apex:inputField value="{!i.item.Owner__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Account Name/Title">
+                        <apex:inputField value="{!i.item.Name}"/>
+                    </apex:column>                      
+                    <apex:column headerValue="Account Number">
+                        <apex:inputField value="{!i.item.Account_Number__c}"/>
+                    </apex:column>          
+                    <apex:column headerValue="Additional Information">
+                        <apex:inputField value="{!i.item.Description__c}"/>
+                    </apex:column>                              
+                    <apex:column headerValue="Current Value">
+                        <apex:inputField value="{!i.item.Current_Value__c}"/>
+                    </apex:column>              
+                    <apex:column headerValue="Cost Basis">
+                        <apex:inputField value="{!i.item.Cost_Basis__c}"/>
+                    </apex:column>  
+                    <apex:column headerValue="Action">
+                        <apex:commandLink action="{!removeGoalItem}" value="Remove" reRender="networthSection,msgs" rendered="{!NOT(isReadOnly)}">
+                            <apex:param name="itemIdToRemove" assignTo="{!itemId}" value="{!i.item.Id}"/>
+                        </apex:commandLink>
+                    </apex:column>                                              
+                </apex:pageBlockTable>
+            </apex:pageBlock>
+
+            <apex:pageBlock title="Debt" id="debtSection" rendered="{!pageNumber==2}">
+                <apex:pageBlockButtons location="top">
+                    <apex:commandButton title="Save all currently-entered records" value="Save" action="{!saveDebtItems}" reRender="debtSection,msgs" disabled="{!isReadOnly}"/>
+                    <apex:commandButton title="Save all currently-entered records and add a new row below" value="Save & Add" action="{!addDebtItems}" reRender="debtSection,msgs" disabled="{!isReadOnly}"/>
+                    <!-- <apex:commandButton value="Remove" action="{!removeDebtItems}" reRender="debtSection,msgs"/> -->
+                </apex:pageBlockButtons>
+            <p class="addInstructions">Click 'Add Item' to list as many as you'd like.</p>                                  
+                <apex:pageBlockTable value="{!debtItems}" var="i" id="debt_table" rendered="{!debtItems.size>0}">
+                    <apex:column headerValue="Owner">
+                        <apex:inputField value="{!i.item.Owner__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Description (i.e. Mortgage)">
+                        <apex:inputField value="{!i.item.Description__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Original Amount">
+                        <apex:inputField value="{!i.item.Original_Amount__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Date of Loan">
+                        <apex:inputField value="{!i.item.Date__c}"/>
+                    </apex:column>  
+                    <apex:column headerValue="Interest Rate">
+                        <apex:inputField value="{!i.item.Interest_Rate__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Term in Years">
+                        <apex:inputField value="{!i.item.Term_Years__c}"/>
+                    </apex:column>  
+                    <apex:column headerValue="Monthly Payment">
+                        <apex:inputField value="{!i.item.Monthly_Payment__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Current Balance">
+                        <apex:inputField value="{!i.item.Current_Value__c}"/>
+                    </apex:column>          
+                    <apex:column headerValue="Action">
+                        <apex:commandLink action="{!removeGoalItem}" value="Remove" reRender="debtSection,msgs" rendered="{!NOT(isReadOnly)}">
+                            <apex:param name="itemIdToRemove" assignTo="{!itemId}" value="{!i.item.Id}"/>
+                        </apex:commandLink>
+                    </apex:column>                                                      
+                </apex:pageBlockTable>
+            </apex:pageBlock>
+
+            <apex:pageBlock title="Page 3: Advanced Planning & Insurance Information" rendered="{!pageNumber==3}">
+                <apex:pageBlockSection title="Client" columns="2" collapsible="false">
+                    <apex:pageBlockSectionItem >
+                        <apex:outputText ><strong>Do you have any of these documents?</strong></apex:outputText>        
+                    </apex:pageBlockSectionItem>                
+                    <!-- Reviewed dates -->
+                    <apex:pageBlockSectionItem >
+                        <apex:outputText ><strong>Last Review Date</strong></apex:outputText>       
+                    </apex:pageBlockSectionItem>    
+                    <apex:inputField value="{!Client_Inventory__c.Life_Insurance__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.LifeIns_Reviewed__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Disability_Insurance__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Disability_Reviewed__c}"/>    
+                    <apex:inputField value="{!Client_Inventory__c.Trust__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Trust_Reviewed__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Will__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Will_Reviewed__c}"/>  
+                </apex:pageBlockSection>
+                <!-- Co-client review -->
+                <apex:pageBlockSection title="Co-Client" columns="2" collapsible="false">   
+                    <apex:inputField value="{!Client_Inventory__c.Co_Client_Life_Insurance__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Co_Client_LifeIns_Reviewed__c}"/>                     
+                    <apex:inputField value="{!Client_Inventory__c.Co_Client_Disability_Insurance__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Co_Client_Disability_Reviewed__c}"/>          
+                    <apex:inputField value="{!Client_Inventory__c.Co_Client_Trust__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Co_Client_Trust_Reviewed__c}"/>
+                    <apex:inputField value="{!Client_Inventory__c.Co_Client_Will__c}"/>         
+                    <apex:inputField value="{!Client_Inventory__c.Co_Client_Will_Reviewed__c}"/>
+                </apex:pageBlockSection>
+            </apex:pageBlock>   
+
+            <apex:pageBlock title="Additional Information" rendered="{!pageNumber==3}">
+                <apex:pageBlockSection columns="1" collapsible="false">
+                    <apex:inputField value="{!Client_Inventory__c.Additional_Information__c}"/>
+                </apex:pageBlockSection>                
+            </apex:pageBlock>
+            <apex:pageBlock title="Page 4: Statements and Documents" rendered="{!pageNumber==4}" id="attachmentsSection1">
+                <apex:pageMessage severity="info" strength="0" detail="In order for us to have an accurate picture of your finances, please provide us with your most recent copies of the following statements
+        and documents."/>
+                <apex:pageBlockSection collapsible="true" columns="1" title="Last two years’ Income Tax Returns (include W2, federal, state, gift, estate, trust tax returns)" >
+                    <apex:inputField value="{!Client_Inventory__c.FaxOrBringCopy01__c}"/>
+                    <apex:pageBlockSectionItem >
+                        <apex:inputFile style="width: 96%;" value="{!attachment.body}" filename="{!attachment.name}" id="fileName"/>
+                        <apex:commandButton action="{!upload01}" value="Upload"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockTable title="file uploads" value="{!attachments01}" var="c" rendered="{!attachments01.size>0}">
+        <!--                 <apex:column headervalue="Action">
+                            <apex:outputLink value="{!URLFOR($Action.Attachment.Download,c.id)}">View</apex:outputLink>&nbsp;|&nbsp;
+                            <apex:outputLink value="/setup/own/deleteredirect.jsp?delID={!c.Id}&amp;retURL=%2Fapex%2FClientInventory&amp;_CONFIRMATIONTOKEN={!GETSESSIONID()}" onclick="return confirmDelete();">Del</apex:outputLink>
+                            <apex:outputLink value="{!URLFOR($Action.Attachment.Delete,c.Id)}" onclick="return confirmDelete();">Del</apex:outputLink>
+                        </apex:column>    -->         
+                        <apex:column headervalue="{!$ObjectType['attachment'].fields['name'].Label}">
+                            <apex:outputlink value="/{!c.id}" target="_blank">{!c.name}</apex:outputlink>
+                            <!-- /servlet/servlet.FileDownload?file=  -->
+                        </apex:column>
+                        <apex:column value="{!c.createddate}"/>
+                        <apex:column headervalue="Created By" value="{!c.CreatedBy.Name}"/>
+                    </apex:pageBlockTable> 
+                </apex:pageBlockSection>
+                <apex:pageBlockSection collapsible="true" columns="1" title="Current Bank Statements" >
+                    <apex:inputField value="{!Client_Inventory__c.FaxOrBringCopy02__c}"/>
+
+                        <apex:pageBlockSectionItem >
+                        <apex:inputFile style="width: 96%;" value="{!attachment.body}" filename="{!attachment.name}" id="fileName"/>
+                        <apex:commandButton action="{!upload02}" value="Upload"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockTable title="file uploads" value="{!attachments02}" var="c" rendered="{!attachments02.size>0}">
+                        <apex:column headervalue="{!$ObjectType['attachment'].fields['name'].Label}">
+                            <apex:outputlink value="/{!c.id}" target="_blank">{!c.name}</apex:outputlink>
+                            <!-- /servlet/servlet.FileDownload?file=  -->
+                        </apex:column>
+                        <apex:column value="{!c.createddate}"/>
+                        <apex:column headervalue="Created By" value="{!c.CreatedBy.Name}"/>
+                    </apex:pageBlockTable> 
+                </apex:pageBlockSection>
+                <apex:pageBlockSection collapsible="true" columns="1" title="Current Brokerage Statements (include custodial accounts)" >
+                    <apex:inputField value="{!Client_Inventory__c.FaxOrBringCopy03__c}"/>
+
+                        <apex:pageBlockSectionItem >
+                        <apex:inputFile style="width: 96%;" value="{!attachment.body}" filename="{!attachment.name}" id="fileName"/>
+                        <apex:commandButton action="{!upload03}" value="Upload"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockTable title="file uploads" value="{!attachments03}" var="c" rendered="{!attachments03.size>0}">
+                        <apex:column headervalue="{!$ObjectType['attachment'].fields['name'].Label}">
+                            <apex:outputlink value="/{!c.id}" target="_blank">{!c.name}</apex:outputlink>
+                            <!-- /servlet/servlet.FileDownload?file=  -->
+                        </apex:column>
+                        <apex:column value="{!c.createddate}"/>
+                        <apex:column headervalue="Created By" value="{!c.CreatedBy.Name}"/>
+                    </apex:pageBlockTable> 
+                </apex:pageBlockSection>
+                <apex:pageBlockSection collapsible="true" columns="1" title="Life Insurance, Disability & Long-term Care Insurance Policies & Statements" >
+                    <apex:inputField value="{!Client_Inventory__c.FaxOrBringCopy04__c}"/>
+
+                        <apex:pageBlockSectionItem >
+                        <apex:inputFile style="width: 96%;" value="{!attachment.body}" filename="{!attachment.name}" id="fileName"/>
+                        <apex:commandButton action="{!upload04}" value="Upload"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockTable title="file uploads" value="{!attachments04}" var="c" rendered="{!attachments04.size>0}">
+                        <apex:column headervalue="{!$ObjectType['attachment'].fields['name'].Label}">
+                            <apex:outputlink value="/{!c.id}" target="_blank">{!c.name}</apex:outputlink>
+                            <!-- /servlet/servlet.FileDownload?file=  -->
+                        </apex:column>
+                        <apex:column value="{!c.createddate}"/>
+                        <apex:column headervalue="Created By" value="{!c.CreatedBy.Name}"/>
+                    </apex:pageBlockTable> 
+                </apex:pageBlockSection>
+                <apex:pageBlockSection collapsible="true" columns="1" title="Pay Stub(s) for one full month (& other statements reflecting other types of income)" >
+                    <apex:inputField value="{!Client_Inventory__c.FaxOrBringCopy05__c}"/>
+
+                        <apex:pageBlockSectionItem >
+                        <apex:inputFile style="width: 96%;" value="{!attachment.body}" filename="{!attachment.name}" id="fileName"/>
+                        <apex:commandButton action="{!upload05}" value="Upload"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockTable title="file uploads" value="{!attachments05}" var="c" rendered="{!attachments05.size>0}">
+                        <apex:column headervalue="{!$ObjectType['attachment'].fields['name'].Label}">
+                            <apex:outputlink value="/{!c.id}" target="_blank">{!c.name}</apex:outputlink>
+                            <!-- /servlet/servlet.FileDownload?file=  -->
+                        </apex:column>
+                        <apex:column value="{!c.createddate}"/>
+                        <apex:column headervalue="Created By" value="{!c.CreatedBy.Name}"/>
+                    </apex:pageBlockTable> 
+                </apex:pageBlockSection>
+                <apex:pageBlockSection collapsible="true" columns="1" title="Retirement Account Statements (IRA, 401(k), 403(b), 457, Keogh, etc.) & Pension Benefit Documents" >
+                    <apex:inputField value="{!Client_Inventory__c.FaxOrBringCopy06__c}"/>
+
+                        <apex:pageBlockSectionItem >
+                        <apex:inputFile style="width: 96%;" value="{!attachment.body}" filename="{!attachment.name}" id="fileName"/>
+                        <apex:commandButton action="{!upload06}" value="Upload"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockTable title="file uploads" value="{!attachments06}" var="c" rendered="{!attachments06.size>0}">
+                        <apex:column headervalue="{!$ObjectType['attachment'].fields['name'].Label}">
+                            <apex:outputlink value="/{!c.id}" target="_blank">{!c.name}</apex:outputlink>
+                            <!-- /servlet/servlet.FileDownload?file=  -->
+                        </apex:column>
+                        <apex:column value="{!c.createddate}"/>
+                        <apex:column headervalue="Created By" value="{!c.CreatedBy.Name}"/>
+                    </apex:pageBlockTable> 
+                </apex:pageBlockSection>
+                <apex:pageBlockSection collapsible="true" columns="1" title="Estate Planning Documents (e.g. copy of wills, trusts, powers of attorney, health care directives)" >
+                    <apex:inputField value="{!Client_Inventory__c.FaxOrBringCopy07__c}"/>
+
+                        <apex:pageBlockSectionItem >
+                        <apex:inputFile style="width: 96%;" value="{!attachment.body}" filename="{!attachment.name}" id="fileName"/>
+                        <apex:commandButton action="{!upload07}" value="Upload"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockTable title="file uploads" value="{!attachments07}" var="c" rendered="{!attachments07.size>0}">
+                        <apex:column headervalue="{!$ObjectType['attachment'].fields['name'].Label}">
+                            <apex:outputlink value="/{!c.id}" target="_blank">{!c.name}</apex:outputlink>
+                            <!-- /servlet/servlet.FileDownload?file=  -->
+                        </apex:column>
+                        <apex:column value="{!c.createddate}"/>
+                        <apex:column headervalue="Created By" value="{!c.CreatedBy.Name}"/>
+                    </apex:pageBlockTable> 
+                </apex:pageBlockSection>
+            </apex:pageBlock>
+            <apex:pageBlock title="Page 5: Statements and Documents (continued)" rendered="{!pageNumber==5}" id="attachmentsSection2">      
+                <apex:pageBlockSection collapsible="true" columns="1" title="Investment Cost Basis Information on all Taxable Assets" >
+                    <apex:inputField value="{!Client_Inventory__c.FaxOrBringCopy08__c}"/>
+
+                        <apex:pageBlockSectionItem >
+                        <apex:inputFile style="width: 96%;" value="{!attachment.body}" filename="{!attachment.name}" id="fileName"/>
+                        <apex:commandButton action="{!upload08}" value="Upload"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockTable title="file uploads" value="{!attachments08}" var="c" rendered="{!attachments08.size>0}">
+                        <apex:column headervalue="{!$ObjectType['attachment'].fields['name'].Label}">
+                            <apex:outputlink value="/{!c.id}" target="_blank">{!c.name}</apex:outputlink>
+                            <!-- /servlet/servlet.FileDownload?file=  -->
+                        </apex:column>
+                        <apex:column value="{!c.createddate}"/>
+                        <apex:column headervalue="Created By" value="{!c.CreatedBy.Name}"/>
+                    </apex:pageBlockTable> 
+                </apex:pageBlockSection>
+            <!-- <apex:pageMessage severity="info" strength="0" detail="Other items to include, if applicable"/> -->
+                <apex:pageBlockSection collapsible="true" columns="1" title="Annuity Statements" >
+                    <apex:inputField value="{!Client_Inventory__c.FaxOrBringCopy09__c}"/>
+
+                        <apex:pageBlockSectionItem >
+                        <apex:inputFile style="width: 96%;" value="{!attachment.body}" filename="{!attachment.name}" id="fileName"/>
+                        <apex:commandButton action="{!upload09}" value="Upload"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockTable title="file uploads" value="{!attachments09}" var="c" rendered="{!attachments09.size>0}">
+                        <apex:column headervalue="{!$ObjectType['attachment'].fields['name'].Label}">
+                            <apex:outputlink value="/{!c.id}" target="_blank">{!c.name}</apex:outputlink>
+                            <!-- /servlet/servlet.FileDownload?file=  -->
+                        </apex:column>
+                        <apex:column value="{!c.createddate}"/>
+                        <apex:column headervalue="Created By" value="{!c.CreatedBy.Name}"/>
+                    </apex:pageBlockTable> 
+                </apex:pageBlockSection>
+                <apex:pageBlockSection collapsible="true" columns="1" title="Details Regarding Potential Inheritance(s)" >
+                    <apex:inputField value="{!Client_Inventory__c.FaxOrBringCopy10__c}"/>
+
+                        <apex:pageBlockSectionItem >
+                        <apex:inputFile style="width: 96%;" value="{!attachment.body}" filename="{!attachment.name}" id="fileName"/>
+                        <apex:commandButton action="{!upload10}" value="Upload"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockTable title="file uploads" value="{!attachments10}" var="c" rendered="{!attachments10.size>0}">
+                        <apex:column headervalue="{!$ObjectType['attachment'].fields['name'].Label}">
+                            <apex:outputlink value="/{!c.id}" target="_blank">{!c.name}</apex:outputlink>
+                            <!-- /servlet/servlet.FileDownload?file=  -->
+                        </apex:column>
+                        <apex:column value="{!c.createddate}"/>
+                        <apex:column headervalue="Created By" value="{!c.CreatedBy.Name}"/>
+                    </apex:pageBlockTable> 
+                </apex:pageBlockSection>
+                <apex:pageBlockSection collapsible="true" columns="1" title="Employee Stock Option Information" >
+                    <apex:inputField value="{!Client_Inventory__c.FaxOrBringCopy11__c}"/>
+
+                        <apex:pageBlockSectionItem >
+                        <apex:inputFile style="width: 96%;" value="{!attachment.body}" filename="{!attachment.name}" id="fileName"/>
+                        <apex:commandButton action="{!upload11}" value="Upload"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockTable title="file uploads" value="{!attachments11}" var="c" rendered="{!attachments11.size>0}">
+                        <apex:column headervalue="{!$ObjectType['attachment'].fields['name'].Label}">
+                            <apex:outputlink value="/{!c.id}" target="_blank">{!c.name}</apex:outputlink>
+                            <!-- /servlet/servlet.FileDownload?file=  -->
+                        </apex:column>
+                        <apex:column value="{!c.createddate}"/>
+                        <apex:column headervalue="Created By" value="{!c.CreatedBy.Name}"/>
+                    </apex:pageBlockTable> 
+                </apex:pageBlockSection>
+                <apex:pageBlockSection collapsible="true" columns="1" title="Partnership Documentation" >
+                    <apex:inputField value="{!Client_Inventory__c.FaxOrBringCopy12__c}"/>
+
+                        <apex:pageBlockSectionItem >
+                        <apex:inputFile style="width: 96%;" value="{!attachment.body}" filename="{!attachment.name}" id="fileName"/>
+                        <apex:commandButton action="{!upload12}" value="Upload"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockTable title="file uploads" value="{!attachments12}" var="c" rendered="{!attachments12.size>0}">
+                        <apex:column headervalue="{!$ObjectType['attachment'].fields['name'].Label}">
+                            <apex:outputlink value="/{!c.id}" target="_blank">{!c.name}</apex:outputlink>
+                            <!-- /servlet/servlet.FileDownload?file=  -->
+                        </apex:column>
+                        <apex:column value="{!c.createddate}"/>
+                        <apex:column headervalue="Created By" value="{!c.CreatedBy.Name}"/>
+                    </apex:pageBlockTable> 
+                </apex:pageBlockSection>
+                <apex:pageBlockSection collapsible="true" columns="1" title="Business Ownership/Partnership Agreements" >
+                    <apex:inputField value="{!Client_Inventory__c.FaxOrBringCopy13__c}"/>
+
+                        <apex:pageBlockSectionItem >
+                        <apex:inputFile style="width: 96%;" value="{!attachment.body}" filename="{!attachment.name}" id="fileName"/>
+                        <apex:commandButton action="{!upload13}" value="Upload"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockTable title="file uploads" value="{!attachments13}" var="c" rendered="{!attachments13.size>0}">
+                        <apex:column headervalue="{!$ObjectType['attachment'].fields['name'].Label}">
+                            <apex:outputlink value="/{!c.id}" target="_blank">{!c.name}</apex:outputlink>
+                            <!-- /servlet/servlet.FileDownload?file=  -->
+                        </apex:column>
+                        <apex:column value="{!c.createddate}"/>
+                        <apex:column headervalue="Created By" value="{!c.CreatedBy.Name}"/>
+                    </apex:pageBlockTable> 
+                </apex:pageBlockSection>
+                <apex:pageBlockSection collapsible="true" columns="1" title="Social Security Benefit Statements (estimates, if applicable)" >
+                    <apex:inputField value="{!Client_Inventory__c.FaxOrBringCopy14__c}"/>
+
+                        <apex:pageBlockSectionItem >
+                        <apex:inputFile style="width: 96%;" value="{!attachment.body}" filename="{!attachment.name}" id="fileName"/>
+                        <apex:commandButton action="{!upload14}" value="Upload"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockTable title="file uploads" value="{!attachments14}" var="c" rendered="{!attachments14.size>0}">
+                        <apex:column headervalue="{!$ObjectType['attachment'].fields['name'].Label}">
+                            <apex:outputlink value="/{!c.id}" target="_blank">{!c.name}</apex:outputlink>
+                            <!-- /servlet/servlet.FileDownload?file=  -->
+                        </apex:column>
+                        <apex:column value="{!c.createddate}"/>
+                        <apex:column headervalue="Created By" value="{!c.CreatedBy.Name}"/>
+                    </apex:pageBlockTable> 
+                </apex:pageBlockSection>
+            </apex:pageBlock>   
+
+            <apex:pageBlock title="Page 6: Documents" rendered="{!pageNumber==6}" id="attachmentsOther">      
+                <apex:pageBlockSection collapsible="true" columns="1" title="Other Documents" >
+
+                        <apex:pageBlockSectionItem >
+                        <apex:inputFile style="width: 96%;" value="{!attachment.body}" filename="{!attachment.name}" id="fileName"/>
+                        <apex:commandButton action="{!uploadOther}" value="Upload"/>
+                    </apex:pageBlockSectionItem>
+                    <apex:pageBlockTable title="file uploads" value="{!clientOtherAttachments}" var="c" rendered="{!clientOtherAttachments.size>0}">
+                        <apex:column headervalue="{!$ObjectType['attachment'].fields['name'].Label}">
+                            <apex:outputlink value="/{!c.id}" target="_blank">{!c.name}</apex:outputlink>
+                            <!-- /servlet/servlet.FileDownload?file=  -->
+                        </apex:column>
+                        <apex:column value="{!c.createddate}"/>
+                        <apex:column headervalue="Created By" value="{!c.CreatedBy.Name}"/>
+                    </apex:pageBlockTable> 
+                </apex:pageBlockSection>
+                <apex:pageBlockSection collapsible="true" columns="1" title="Uploaded by CCM" >
+
+                    <apex:pageBlockTable title="file uploads" value="{!otherAttachments}" var="c" rendered="{!otherAttachments.size>0}">
+                        <apex:column headervalue="{!$ObjectType['attachment'].fields['name'].Label}">
+                            <apex:outputlink value="/{!c.id}" target="_blank">{!c.name}</apex:outputlink>
+                            <!-- /servlet/servlet.FileDownload?file=  -->
+                        </apex:column>
+                        <apex:column value="{!c.createddate}"/>
+                        <apex:column headervalue="Created By" value="{!c.CreatedBy.Name}"/>
+                    </apex:pageBlockTable> 
+                    <apex:pageBlockTable title="file uploads" value="{!otherDocuments}" var="c" rendered="{!otherDocuments.size>0}">
+                        <apex:column headervalue="File Name">
+                            <apex:outputlink value="/{!c.ContentDocumentId}" target="_blank">{!c.ContentDocument.Title}</apex:outputlink>
+                            <!-- /servlet/servlet.FileDownload?file=  -->
+                        </apex:column>
+                        <apex:column headervalue="Created Date" value="{!c.ContentDocument.CreatedDate}"/>
+                        <apex:column headervalue="Created By" value="{!c.ContentDocument.CreatedBy.Name}"/>
+                    </apex:pageBlockTable> 
+                </apex:pageBlockSection>
+            </apex:pageBlock>   
+
+            <apex:pageBlock rendered="{!pageNumber==7}">
+<!--                <div class="logoHeading">
+                    <apex:image value="{!$Resource.Investment_Snapshot_Logo}" style="margin-right:auto;margin-left:auto;"/>
+                </div>           -->
+                <div id="clientInventoryThankYouSection">
+                    <h1 class="ccmSectionHeading">Thank You!</h1>
+                    <p class="sectionInstruction">Thank you for completing the CCM Client Inventory. When you click Complete Inventory, your primary advisor contact at Carlson Capital Management will receive a message to let them know the form is ready for review. If you have any questions, please contact your advisor. We look forward to working with you to determine how we can assist you in achieving your financial goals. Your time completing these Inventory forms is appreciated.</p>
+                </div>
+            </apex:pageBlock>       
+            <div style="margin-right:auto;margin-left:auto;text-align:center;">
+                <apex:commandButton value="<< Previous" action="{!priorPage}" disabled="{!pageNumber==0}"/>
+                <apex:commandButton value="Next >>" action="{!nextPage}" disabled="{!pageNumber==totalPages}"/>     
+                &nbsp;|&nbsp;
+                <apex:commandButton value="Save & Exit" action="{!saveAndExit}" disabled="{!isReadOnly}"/>
+                <apex:commandButton value="Save" action="{!quickSaveItems}" disabled="{!isReadOnly}"/>
+            </div>
+        </apex:form>
+    </div>
+</apex:page>

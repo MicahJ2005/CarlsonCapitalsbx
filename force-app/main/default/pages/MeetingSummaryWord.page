@@ -1,0 +1,57 @@
+<apex:page title="Meeting Summary in Word" showHeader="false" sidebar="false" standardStylesheets="false" standardController="Account" extensions="MeetingSummaryController" applyBodyTag="false" id="thePage" contenttype="application/msWord#MeetingSummary.doc" cache="true" applyHtmlTag="false">
+    <!--<html>-->
+        <head>
+            <apex:stylesheet value="{!URLFOR($Resource.MeetingSummaryCSS)}"/>
+        </head>
+        <body>
+                <!--<p style="text-align: center;"><apex:image value="{!URLFOR($Resource.Investment_Snapshot_Logo)}" width="217" height="60" style="margin:0 auto;"/></p>-->
+                <div align = "Center">
+                    <h1>
+                        Regular Progress Meeting Agenda
+                    </h1>
+                    <h1>
+                        {!household.Name}
+                    </h1>
+                    <h2>
+                        {!dateVal}
+                    </h2>
+                    <h3>
+                        "Your wealth as a tool to accomplish what is important to you."
+                    </h3>
+                    <table>
+                        <th width="15%" style="font-size:18px; white-space: nowrap;">
+                            ACTION ITEMS:
+                        </th>
+                        <th width="65%" style="font-size:18px; color:red;">
+                            {!primaryName} {!if (spouseName != NULL, 'and ' + spouseName, '')}
+                        </th>
+                        <th width="15%" style="font-size:18px; color:blue; text-align: right;">
+                            CCM
+                        </th>
+                    </table>
+                    
+                </div>
+                <div>
+                    <apex:repeat value="{!lstCount}" var="key3">
+                        <apex:repeat value="{!lstNotes[key3]}" var="value3">
+                            <table width="100%">
+                                <tr class="sectionHeader2">
+                                    <th align="left" style="border:{!if(currentUser == 'Andreas Scott', 'None;', '1px solid black; padding-left:5px;')}">
+                                        <apex:outputText value="{!value3.keyContent}" style="whitespace: nowrap; text-decoration: {!if(currentUser == 'Andreas Scott', 'underline;', 'None')}"/>
+                                    </th>
+                                </tr>
+                                <apex:repeat value="{!value3.parsedNotesCount}" var="c1">
+                                    <tr>
+                                        <td style="padding-left: {!(value3.paddingAmount[c1] + 'px')};">
+                                            <span style="color:{!if (value3.assignedToClient[c1] == True, 'Red', if (value3.taskLocation[c1] != 0, 'Blue', 'Black'))};">{!value3.numbering[c1]}</span>
+                                            <apex:outputText style="whitespace: nowrap; color:{!if (value3.assignedToClient[c1] == True, 'Red', if (value3.taskLocation[c1] != 0, 'Blue', 'Black'))};" value="{!value3.parsedNotes[c1]}"/>
+                                        </td>
+                                    </tr>
+                                </apex:repeat>
+                            </table>
+                        </apex:repeat>
+                    </apex:repeat>
+                </div>
+        </body>
+    <!--</html>-->
+</apex:page>

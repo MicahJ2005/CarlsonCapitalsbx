@@ -1,0 +1,34 @@
+<apex:page title="Meeting Summary Tasks" sidebar="false" showHeader="false" standardController="Account" extensions="MeetingSummaryController" id="mySummary">
+    <apex:form >
+        <apex:pageBlock >
+            
+            <b>Tasks Created:</b>
+            <apex:pageBlockTable value="{!tasksCreated}" var="t" columns="4">
+                <apex:column ><apex:outputLink value="{!URLFOR($Action.Task.View, t.Id)}">{!t.Subject}</apex:outputLink></apex:column>
+                <apex:column value="{!t.Description}"></apex:column>
+                <apex:column value="{!t.ActivityDate}"></apex:column>
+                <apex:column value="{!t.OwnerId}"><!--<apex:outputField value="{!t.OwnerId}"/>--></apex:column>
+                
+            </apex:pageBlockTable>
+            
+            <b>Processes Created:</b>
+            <apex:pageBlockTable value="{!processCreated}" var="b" columns="3">
+                <apex:column ><apex:outputLink value="{!URLFOR($Action.FSTR__Business_Process__c.View, b.Id)}">{!b.FSTR__Subject__c}</apex:outputLink></apex:column>
+                <apex:column value="{!b.Notes__c}"></apex:column>
+                <apex:column value="{!b.OwnerId}"></apex:column>
+
+                
+            </apex:pageBlockTable>
+            
+            <b>Trades Created:</b>
+            <apex:pageBlockTable value="{!tradeCreated}" var="tr" columns="4">
+                <apex:column ><apex:outputLink value="{!URLFOR($Action.Case.View, tr.Id)}">{!tr.Subject}</apex:outputLink></apex:column>
+                <apex:column value="{!tr.Description}"></apex:column>
+                <apex:column value="{!tr.FSTR__Due_Date__c}"></apex:column>
+                <apex:column value="{!tr.Amount__c}"></apex:column>
+                
+            </apex:pageBlockTable>
+            
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

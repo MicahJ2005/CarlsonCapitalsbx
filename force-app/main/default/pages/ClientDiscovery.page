@@ -1,0 +1,402 @@
+<apex:page standardController="Discover_Questionnaire__c" extensions="ClientDiscoveryCtrl" showHeader="true" sidebar="false" id="thePage" action="{!onPageLoad}">
+    <style>
+        body .bPageBlock, body .pbHeader, body .pbBody, body  .secondaryPalette.bPageBlock {
+            background-color: white !important;
+        }   
+        body div.bodyDiv table#bodyTable div#discoveryPage,body .x-btn button, body .btn, body .btnImportant, body .btnDisabled, body .btnCancel, body .menuButton .menuButtonButton, body .menuButton .menuButtonMenu a, body .menuButton .menuButtonMenu input.theOption, h1, h2, h3, h4, h5, h6, p {
+            font-family: 'Verdana, Geneva, sans-serif';
+        }   
+        body div.bodyDiv table#bodyTable div#discoveryPage,body .menuButton .menuButtonMenu a, body .menuButton .menuButtonMenu input.theOption, h1, h2, h3, h4, h5, h6, p {
+            font-size:1.2em;
+        }   
+        body .x-btn button, body .btn, body .btnImportant, body .btnDisabled, body .btnCancel, body .menuButton .menuButtonButton {
+            font-size:0.9em;
+        }           
+        span.dateFormat {
+            visibility: hidden;
+        }
+        .pbSubheader h3 {
+            color:black;
+        }
+        td.data2Col {
+            display: block;
+            text-align:left;
+            float:none;
+        }
+        th.labelCol.vfLabelColTextWrap {
+            display: block;
+            text-align:left;
+            width:100%;
+            float:none;
+            word-wrap:none;
+            padding-left:10px;
+        }
+        p.questionLabel {
+
+        }
+        textarea {
+            width:80%;
+        }
+        p.sectionInstruction {
+            font-size:1.2em;
+        }
+        div.logoHeading {
+            display: block;
+            margin-right:auto;
+            margin-left:auto;
+            width:60%;
+            padding:10px;
+            margin-top:25px;
+            margin-bottom:15px; 
+        }
+        div#estatePlanningSection,div#backgroundSection, div#clientDiscoveryThankYouSection {
+            display: block;
+            margin-right:auto;
+            margin-left:auto;
+            width:60%;
+            padding:10px;
+            margin-top:25px;
+            margin-bottom:25px;
+            /*background-color:white;*/
+            min-height: 100px;
+        }
+        div.pageIntroHeading {
+            display: block;
+            font-size:1.1em;
+            margin-right:auto;
+            margin-left:auto;
+            width:75%;
+            padding:10px;
+            margin-top:10px;
+            margin-bottom:25px;
+            /*background-color:white;*/
+        }       
+        h1.ccmSectionHeading {
+            font-size:1.4em;
+            display:block;
+            text-align:center;
+            width:100%;         
+        }
+        p.addInstructions {
+            padding-bottom:10px;
+            padding-top:10px;
+            font-weight:bold;   
+            font-size: 1.1em;       
+        }
+    </style>
+    <div id="discoveryPage">
+        <!-- <apex:image value="{!$Resource.Investment_Snapshot_Logo}" style="margin-right:auto;margin-left:auto;"/> -->
+        <br/>
+        <h1 style="margin-left:15px;font-size: 1.8em;font-weight:normal;" class="pageDescription">{!IF(isCoClient,'Co-','')}Client Discovery Questionnaire</h1>
+        <!-- <apex:sectionHeader subtitle="Client Discovery Questionnaire" title="Carlson Capital Management" /> -->
+        <apex:pageMessages id="msgs"/>
+        <apex:form >
+        <!-- <apex:inputHidden value="{!Discover_Questionnaire__c.AutoSaved__c}"/> -->
+        <apex:outputPanel style="text-align:center;" id="lastSaved">
+            <p><strong>Page {!pageNumber-1} of {!totalPages-1}</strong>&nbsp;&nbsp;<apex:outputText rendered="{!NOT(isReadOnly)}"><i>Last saved {!lastSavedMinutesAgo} minutes ago.</i></apex:outputText></p>
+        </apex:outputPanel>
+        <apex:actionPoller interval="60" action="{!updateLastSaved}" status="actionStatus" reRender="lastSaved" rendered="{!NOT(isReadOnly)}"/>
+        <apex:actionPoller interval="300" action="{!autoSave}" status="actionStatus" reRender="lastSaved,msgs" rendered="{!NOT(isReadOnly)}"/>   
+        <apex:pageBlock >
+            <!-- <apex:pageBlockButtons location="top"> -->
+            <div style="margin-right:auto;margin-left:auto;text-align:center;">
+                <!-- <apex:commandButton value="Page 1" action="{!page1}" disabled="{!pageNumber==1}"/> -->
+                <apex:commandButton value="Page 1" action="{!page2}" title="Background" disabled="{!pageNumber==2}"/>
+                <apex:commandButton value="Page 2" action="{!page3}" title="Financial Perspectives" disabled="{!pageNumber==3}"/>
+                <apex:commandButton value="Page 3" action="{!page4}" title="Life Goals" disabled="{!pageNumber==4}"/>
+                <apex:commandButton value="Page 4" action="{!page5}" title="Investment Perspectives" disabled="{!pageNumber==5}"/>
+                <apex:commandButton value="Page 5" action="{!page6}" title="Estate Planning" disabled="{!pageNumber==6}"/>
+                <apex:commandButton value="Page 6" action="{!page7}" title="Estate Planning (continued)" disabled="{!pageNumber==7}"/>
+                <apex:commandButton value="Page 7" action="{!page8}" title="Thank You" disabled="{!pageNumber==8}"/>
+                &nbsp;|&nbsp;
+                <apex:commandButton value="Save and Continue" action="{!quickSaveItems}" disabled="{!isReadOnly}"/>
+                <apex:commandButton value="Complete Questionnaire" onclick="return confirmDelete();" action="{!completeApplication}" disabled="{!isReadOnly}"/>
+            </div>          
+            <!-- </apex:pageBlockButtons> -->
+        </apex:pageBlock>   
+        <!-- <apex:outputText value="{!Discover_Questionnaire__c.Confidential_Discovery_Questionnaire__c}"/> -->
+        <apex:pageBlock rendered="{!pageNumber==1}">
+<!--            <div class="logoHeading">
+                <apex:image value="{!$Resource.Investment_Snapshot_Logo}" style="margin-right:auto;margin-left:auto;"/>
+            </div>           -->
+            <div id="backgroundSection">
+                <h1 class="ccmSectionHeading">Welcome!</h1>
+                <p class="sectionInstruction">CCM’s Discovery Process is designed to foster dialogue and identify what is important to you in life, while providing our team with data and the records necessary for integrated planning. We encourage each spouse or co-client to provide input in this process by completing their own questionnaire form.</p>
+            </div>
+        </apex:pageBlock>
+        <apex:pageBlock title="Background" rendered="{!pageNumber==2}">
+            <apex:pageBlockSection columns="1" collapsible="false">
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Full_Name__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Full_Name__c}"/>          
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Originally_From__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Originally_From__c}"/>
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Interests_Leaisure__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Interests_Leaisure__c}"/>
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Work_History__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Work_History__c}"/>
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Educational_Background__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Educational_Background__c}"/>
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Civic_roles_Volunteer__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Civic_roles_Volunteer__c}"/>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        <apex:pageBlock title="Financial Perspectives" rendered="{!pageNumber==3}">
+            <apex:pageBlockSection columns="1" collapsible="false">
+                <p>{!$ObjectType.Discover_Questionnaire__c.fields.First_Memories_of_Money__c.inlineHelpText}</p>
+                <apex:inputField label=" "  value="{!Discover_Questionnaire__c.First_Memories_of_Money__c}" />
+                <p>{!$ObjectType.Discover_Questionnaire__c.fields.Interested_in_Personal_Finance__c.inlineHelpText}</p>
+                <apex:inputField label=" "  value="{!Discover_Questionnaire__c.Interested_in_Personal_Finance__c}"/>
+                <p>{!$ObjectType.Discover_Questionnaire__c.fields.Biggest_Financial_Blindspot__c.inlineHelpText}</p>
+                <apex:inputField label=" "  value="{!Discover_Questionnaire__c.Biggest_Financial_Blindspot__c}"/>
+                <p>{!$ObjectType.Discover_Questionnaire__c.fields.Sources_of_Financial_Info__c.inlineHelpText}</p>
+                <apex:inputField label=" "  value="{!Discover_Questionnaire__c.Sources_of_Financial_Info__c}"/>
+                <p>{!$ObjectType.Discover_Questionnaire__c.fields.Fiancially_Unattainable_Dream__c.inlineHelpText}</p>
+                <apex:inputField label=" "  value="{!Discover_Questionnaire__c.Fiancially_Unattainable_Dream__c}"/>
+                <p>{!$ObjectType.Discover_Questionnaire__c.fields.Definition_of_financial_independence__c.inlineHelpText}</p>
+                <apex:inputField label=" "  value="{!Discover_Questionnaire__c.Definition_of_financial_independence__c}"/>
+                <p>{!$ObjectType.Discover_Questionnaire__c.fields.Paid_2_year_Sabbatical__c.inlineHelpText}</p>
+                <apex:inputField label=" "  value="{!Discover_Questionnaire__c.Paid_2_year_Sabbatical__c}"/>
+                <p>{!$ObjectType.Discover_Questionnaire__c.fields.If_no_heirs_beneficiaries__c.inlineHelpText}</p>
+                <apex:inputField label=" "  value="{!Discover_Questionnaire__c.If_no_heirs_beneficiaries__c}"/>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        <!-- Field to replace with related object records -->
+        <apex:pageBlock title="Life Goals" rendered="{!pageNumber==4}" id="lifeGoalsSection">
+            <apex:pageBlockButtons location="bottom">
+                <!-- <apex:commandButton value="Save" action="{!saveGoalItems}" reRender="lifeGoalsSection,msgs"/> -->
+                <apex:commandButton value="Add Goal" action="{!addGoalItem}" reRender="lifeGoalsSection,msgs" disabled="{!isReadOnly}"/>
+                <!-- <apex:commandButton value="Remove" action="{!removeGoalItem}" reRender="lifeGoalsSection,msgs"/> -->
+            </apex:pageBlockButtons>    
+            <!-- Examples -->
+            <div class="pageIntroHeading">
+                <p style="font-size:1.1em;">
+                For this section, we ask that you consider identifying at least two goals in each of the following categories: Family, Work/Career, Financial, Personal Growth, Leisure/Recreation, Community, and Charitable. After you summarize each goal, you’ll be asked to give it a priority level ranging from low to high and also a timeframe ranging from current to long-term. These certainly won’t be “set in stone,” but rather, help our advisory team to know what is important to you and how your financial plan can be designed to help you accomplish what is most important to you.
+                </p>
+                <p style="font-size:1.1em;"><strong>A few examples of goals to consider:</strong></p>
+                <p style="margin-top:5px;font-size:1.0em;">Family: education needs, home remodeling, support for parents/dependents, gifts to family, wedding, new vehicle, other large purchases</p>
+                <p style="margin-top:5px;font-size:1.0em;">Work/Career: retirement, promotion, relocation, start business, transfer business to children</p>
+                <p style="margin-top:5px;font-size:1.0em;">Financial: change in standard of living, financial independence, passing on wealth to heirs, paying down debt, providing for long-term care needs</p>        
+            </div>
+            <div style="margin-bottom:15px;"></div>
+            <p class="addInstructions">Click 'Add Goal' to list as many as you'd like.</p>                                  
+            <hr/>
+            <apex:pageBlockSection columns="1" collapsible="false">
+                <apex:pageBlockTable value="{!lifeGoals}" var="g">
+                    <apex:column headerValue="{!$ObjectType.Life_Goal__c.fields.Type__c.label}">
+                        <apex:inputField value="{!g.item.Type__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="{!$ObjectType.Life_Goal__c.fields.Goal__c.label}">
+                        <apex:inputField value="{!g.item.Goal__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="{!$ObjectType.Life_Goal__c.fields.Priority__c.label}">
+                        <apex:inputField value="{!g.item.Priority__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="{!$ObjectType.Life_Goal__c.fields.Time_Frame__c.label}">
+                        <apex:inputField value="{!g.item.Time_Frame__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Action">
+                        <apex:commandLink action="{!removeGoalItem}" value="Remove" reRender="lifeGoalsSection,msgs" rendered="{!NOT(isReadOnly)}">
+                            <apex:param name="itemIdToRemove" assignTo="{!itemId}" value="{!g.item.Id}"/>
+                        </apex:commandLink>
+                    </apex:column>          
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>    
+        </apex:pageBlock>   
+        <apex:pageBlock title="Investment Perspectives" rendered="{!pageNumber==5}">
+            <div class="pageIntroHeading">
+                <p>
+                    Your responses to the following set of questions will provide our Advisors and investment team with key information for designing and recommending a portfolio that considers your past experience with investing, your risk tolerance, and future needs from your portfolio.
+                </p>
+            </div>
+            <div style="margin-bottom:15px;"></div>
+            <hr/>           
+            <apex:pageBlockSection columns="1" collapsible="false">
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Invest__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Invest__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Willingness_to_take_Risk__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Willingness_to_take_Risk__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Definition_of_risk__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Definition_of_risk__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Gain_Loss_focus__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Gain_Loss_focus__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Adaptability_to_adversity__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Adaptability_to_adversity__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Financial_confidence__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Financial_confidence__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Downside_risk_acceptance__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Downside_risk_acceptance__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Recent_investment_changes__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Recent_investment_changes__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Max_downside_risk__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Max_downside_risk__c}"/>      
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Lump_sum_allocation__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Lump_sum_allocation__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Upside_capture__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Upside_capture__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Market_upside_capture__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Market_upside_capture__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Mitigated_downside_capture__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Mitigated_downside_capture__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Average_expected_return__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Average_expected_return__c}"/>
+
+                <p class="questionLabel">O. Some investments like cash accounts and CD’s have stable principal values, but after the impact of inflation may not maintain their purchasing power. Other investments like stocks and real estate have values that fluctuate and may lose value in the short-term, but over time will likely grow more than the rate of inflation. Knowing this, what is more important to you:</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Principal_purchasing_power_protection__c}"/>
+
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Favorable_Inv_experiences__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Favorable_Inv_experiences__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Unfavorable_Inv_experiences__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Unfavorable_Inv_experiences__c}"/>
+            </apex:pageBlockSection>
+            <script>
+             function setFocusOnLoad() {} 
+            </script>                   
+        </apex:pageBlock>
+
+        <apex:pageBlock rendered="{!pageNumber==6}">
+<!--            <div class="logoHeading">
+                <apex:image value="{!$Resource.Investment_Snapshot_Logo}" style="margin-right:auto;margin-left:auto;"/>
+            </div>       -->
+            <div id="estatePlanningSection">
+                <h1 class="ccmSectionHeading">Estate Planning</h1>
+                <p class="sectionInstruction">Planning one’s estate can be a difficult task primarily, of course, because it deals with the very emotional issue of death. Once one comes to terms with the fact this is an event that we all face eventually (whether we plan our estates or not) perhaps the process of estate planning becomes more palatable. Unfortunately, we have seen what happens when individuals have accumulated hard-earned assets over the years and then poor estate planning or no planning wreaks havoc on their financial lives. More importantly perhaps, is the negative impact that poor or no planning can have on family relationships. We often hear, “Our family won’t have a problem with this, we all get along very well.” Do not put that statement to the test. You may be as surprised as we have been over the years as we have worked with clients to find out what occurs when no plan has been documented."</p>
+                <p class="sectionInstruction">We like to think of life in terms of a 10-chapter book. Estate planning focuses primarily on the 10th chapter. If you communicate how you want the 10th chapter to read, we will work to develop an estate plan to get your “book” to read that way. You can expect that you will die at some point far in the future, but you actually need to plan as if you are going to die tomorrow. As applicable, consider if it were one or the other of you, and if it were both of you. Using the questions below, please describe what you would want to have happen to your estate. There are no right or wrong answers, so we encourage you to answer them as openly and honestly as possible.</p>
+            </div>
+        </apex:pageBlock>
+
+        <apex:pageBlock title="Who are your heirs?" id="heirSection" rendered="{!pageNumber==7}">
+            <apex:pageBlockButtons location="top">
+                <apex:commandButton value="Save" action="{!saveHeirItems}" reRender="heirSection,msgs" disabled="{!isReadOnly}"/>
+                <apex:commandButton value="Add Heir" action="{!addHeirItems}" reRender="heirSection,msgs" disabled="{!isReadOnly}"/>
+            </apex:pageBlockButtons>
+            <p class="addInstructions">Click 'Add Heir' to list as many as you'd like.</p>              
+            <apex:pageBlockTable value="{!heirItems}" var="i" id="heir_table" rendered="{!heirItems.size>0}">
+                <apex:column headerValue="Name">
+                    <apex:inputField value="{!i.Name}"/>
+                </apex:column>
+                <apex:column headerValue="Birth Date">
+                    <apex:inputField value="{!i.Date__c}"/>
+                </apex:column>
+                <apex:column headerValue="Age">
+                    <apex:inputField value="{!i.Age__c}"/>
+                </apex:column>          
+                <apex:column headerValue="Social Security #">
+                    <apex:inputField value="{!i.Tax_Id__c}"/>
+                </apex:column>
+                <apex:column headerValue="Marital Status">
+                    <apex:inputField value="{!i.Status__c}"/>
+                </apex:column>  
+                <apex:column headerValue="Action">
+                    <apex:commandLink action="{!removeHeirItem}" value="Remove" reRender="heirSection,msgs" rendered="{!NOT(isReadOnly)}">
+                        <apex:param name="itemIdToRemove" assignTo="{!itemId}" value="{!i.Id}"/>
+                    </apex:commandLink>
+                </apex:column>                                                                      
+            </apex:pageBlockTable>
+        </apex:pageBlock>   
+
+        <apex:pageBlock title="Estate Planning" rendered="{!pageNumber==7}">        
+            <apex:pageBlockSection columns="1" collapsible="false"> 
+                
+    <!--            <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Who_are_your_heirs__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Who_are_your_heirs__c}"/>
+                 -->
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Values_and_Legacy_for_Heirs__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Values_and_Legacy_for_Heirs__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Distribution_to_Heirs__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Distribution_to_Heirs__c}"/>      
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Distribution_Age_for_Heirs__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Distribution_Age_for_Heirs__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Consume_vs_Heir_Preference__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Consume_vs_Heir_Preference__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Minimum_Amount_to_Heirs__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Minimum_Amount_to_Heirs__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Amount_to_Charity__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Amount_to_Charity__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Charity_Tax_or_Heirs_Preference__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Charity_Tax_or_Heirs_Preference__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Charitable_Organizations__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Charitable_Organizations__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Inheritance_at_First_Death__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Inheritance_at_First_Death__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Remarried_Spouse_Plans__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Remarried_Spouse_Plans__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Executor__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Executor__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Guardian__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Guardian__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Spousal_Access__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Spousal_Access__c}"/>
+
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Lifetime_Gifting_Ability__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Lifetime_Gifting_Ability__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Maximum_to_Heirs__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Maximum_to_Heirs__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Fair_vs_Equal__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Fair_vs_Equal__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Children_Spousal_Protection__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Children_Spousal_Protection__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Family_Possessions__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Family_Possessions__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.Per_Capita_or_Stirpes__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.Per_Capita_or_Stirpes__c}"/>
+                
+                <p class="questionLabel">{!$ObjectType.Discover_Questionnaire__c.fields.You_and_Direct_Bene_Simultaneous_Death__c.inlineHelpText}</p>
+                <apex:inputField label=" " value="{!Discover_Questionnaire__c.You_and_Direct_Bene_Simultaneous_Death__c}"/>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        <apex:pageBlock rendered="{!pageNumber==8}">
+<!--            <div class="logoHeading">
+                <apex:image styleClass="logoHeading" value="{!$Resource.Investment_Snapshot_Logo}" style="margin-right:auto;margin-left:auto;"/>
+            </div> -->
+            <div id="clientDiscoveryThankYouSection">
+                <h1 class="ccmSectionHeading">Thank You!</h1>
+                <p class="sectionInstruction">Thank you for completing the CCM Client Discovery Questionnaire. When you click Complete Questionnaire, your primary advisor contact at Carlson Capital Management will receive a message to let them know the form is ready for review. If you have any questions, please contact your advisor. We look forward to working with you to determine how we can assist you in achieving your financial goals. Your time completing these Discovery forms is appreciated.</p>
+            </div>
+        </apex:pageBlock>           
+        <!-- Buttons for page bottom -->
+        <!-- <apex:pageBlock > -->
+            <div style="margin-right:auto;margin-left:auto;text-align:center;">
+                <!-- <apex:pageBlockButtons location="top"> -->
+                    <apex:commandButton value="<< Previous" action="{!priorPage}" disabled="{!pageNumber==1}"/>
+                    <apex:commandButton value="Next >>" action="{!nextPage}" disabled="{!pageNumber==totalPages}"/>     
+                    &nbsp;|&nbsp;
+                    <apex:commandButton value="Save & Exit" action="{!saveAndExit}" disabled="{!isReadOnly}"/>
+                    <apex:commandButton value="Save" action="{!quickSaveItems}" disabled="{!isReadOnly}"/>
+                <!-- </apex:pageBlockButtons> -->
+            </div>
+        <!-- </apex:pageBlock>           -->
+        </apex:form>
+    </div>
+</apex:page>
